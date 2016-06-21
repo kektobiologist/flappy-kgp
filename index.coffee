@@ -23,12 +23,14 @@ deadTubeTops = []
 deadTubeBottoms = []
 deadInvs = []
 
+hallChosen = false
 bg = null
 # credits = null
 tubes = null
 invs = null
 bird = null
 ground = null
+hall = null
 
 score = null
 scoreText = null
@@ -174,7 +176,7 @@ main = ->
         tubeBottom: ["assets/tube2.png"]
         ground: ["assets/path.png"]
         bg: ["assets/bg2.png"]
-
+        hall: ["assets/hall.png"]
       audio:
         flap: ["assets/sfx_wing.mp3"]
         score: ["assets/sfx_point.mp3"]
@@ -293,6 +295,9 @@ main = ->
     spaceKey.onDown.add flap
     
     game.input.onDown.add flap
+    # add hall screen
+    hall = game.add.sprite(game.world.width/2, game.world.height/2, "hall")
+    hall.anchor.setTo 0.5, 0.5
     # RESET!
     reset()
     return
