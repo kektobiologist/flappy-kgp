@@ -298,6 +298,9 @@ main = ->
     return
 
   reset = ->
+    spaceKey.onDown.removeAll()
+    game.input.onTap.removeAll()
+    spaceKey.onDown.add flap    
     gameStarted = false
     gameOver = false
     score = 0
