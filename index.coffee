@@ -236,6 +236,7 @@ main = ->
       0
       1
       2
+      1
     ], 10, true
     bird.body.collideWorldBounds = true
     bird.body.setPolygon(
@@ -296,8 +297,16 @@ main = ->
     
     game.input.onDown.add flap
     # add hall screen
-    hall = game.add.sprite(game.world.width/2, game.world.height/2, "hall")
+    hall = game.add.sprite(game.world.width/2, game.world.height * 1.5, "hall")
     hall.anchor.setTo 0.5, 0.5
+    button = game.add.button 0, 0, 'bird', ->
+      console.log('hey')
+    , this, 2, 1, 0
+    hall.addChild button
+    button.bringToTop
+    tween = game.add.tween(hall).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+    
+    # hall.body.velocity.y = -1
     # RESET!
     reset()
     return
