@@ -42,9 +42,13 @@ scoreSnd = null
 hurtSnd = null
 fallSnd = null
 swooshSnd = null
+hoverSnd = null
+clickSnd = null
 
 tubesTimer = null
 spaceKey = null
+numHalls = 15
+buttonList = null
 githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=hyspace&repo=flappy&type=watch&count=true&size=large"
   allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
 
@@ -163,6 +167,12 @@ main = ->
     return
 
   preload = ->
+    for num in [1..numHalls]
+      birdname = "bird" + num
+      game.load.spritesheet birdname, "assets/birds/" + birdname + ".png", 36, 26
+      btnname = "button" + num
+      game.load.spritesheet btnname, "assets/buttons/" + btnname + ".png", 36, 26
+
     assets =
       spritesheet:
         bird: [
@@ -177,12 +187,15 @@ main = ->
         ground: ["assets/path.png"]
         bg: ["assets/bg2.png"]
         hall: ["assets/hall.png"]
+
       audio:
         flap: ["assets/sfx_wing.mp3"]
         score: ["assets/sfx_point.mp3"]
         hurt: ["assets/sfx_hit.mp3"]
         fall: ["assets/sfx_die.mp3"]
         swoosh: ["assets/sfx_swooshing.mp3"]
+        click: ["assets/keyboard_tap.mp3"]
+        hover: ['assets/typewriter_key.mp3']
 
     Object.keys(assets).forEach (type) ->
       Object.keys(assets[type]).forEach (id) ->
@@ -209,6 +222,8 @@ main = ->
     # Draw bg
     bg = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'bg')
 
+    # dummy bird
+    bird = game.add.sprite(0, 0)
     # Credits 'yo
     # credits = game.add.text(game.world.width / 2, HEIGHT - GROUND_Y + 50, "",
     #   font: "8px \"Press Start 2P\""
@@ -229,25 +244,7 @@ main = ->
     # Add invisible thingies
     invs = game.add.group()
 
-    # Add bird
-    bird = game.add.sprite(0, 0, "bird")
-    bird.anchor.setTo 0.5, 0.5
-    bird.animations.add "fly", [
-      0
-      1
-      2
-      1
-    ], 10, true
-    bird.body.collideWorldBounds = true
-    bird.body.setPolygon(
-      24,1,
-      34,16,
-      30,32,
-      20,24,
-      12,34,
-      2,12,
-      14,2
-    )
+    
 
     # Add ground
     ground = game.add.tileSprite(0, GROUND_Y, WIDTH, GROUND_HEIGHT, "ground")
@@ -290,26 +287,115 @@ main = ->
     hurtSnd = game.add.audio("hurt")
     fallSnd = game.add.audio("fall")
     swooshSnd = game.add.audio("swoosh")
+    hoverSnd = game.add.audio("hover")
+    clickSnd = game.add.audio("click")
+
+    # bird is kill
+    bird.kill()
+    buttonList = []
+    chooseHall()
+    return
+
+  chooseHall = ->
+    # something
+    console.log("choosing hall...")
+    # add hall screen
+    hall = game.add.sprite(game.world.width/2, game.world.height * 1.5, "hall")
+    hall.anchor.setTo 0.5, 0.5
+    avWidth = hall.width - 50
+    avHeight = hall.height - 100
+    for num in [1..numHalls]
+      num -= 1
+      i = parseInt(num/5); 
+      j = num%5   
+      offx = -hall.width/2 + 62; 
+      offy = -hall.height/2 + 100
+      hall.addChild addButton(avWidth/5*j + offx, avHeight/3*i + offy, num+1)
+    # hall.addChild buttonGroup
+    # button = game.add.button 0, 0, 'bird', ->
+    #   console.log('hey')
+    # , this, 2, 1, 0
+    # hall.addChild button
+    # button.bringToTop
+    tween = game.add.tween(hall).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+
+    # game.time.events.add 2000, ->
+    #   # hide hall screen
+    #   tween = game.add.tween(hall).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+    #   tween.onComplete.add ->
+    #     hall.kill()
+    #   postHall()
+
+  addButton = (x, y, idx) ->
+    button = game.add.button x, y, 'button' + idx, ->
+      postHall(idx) unless hallChosen
+    , this, 2, 1, 0, 1
+    button.anchor.setTo 0.5, 0.5
+    # console.log('added btton at' + x + y)
+    button.animations.add "onHover", [
+      0
+      1
+      2
+      1
+    ], 10, true
+    button.trueY = y
+    button.setOverSound(hoverSnd)
+    button.setUpSound(clickSnd)
+    button.events.onInputOver.add ->
+      button.play("onHover", 10, true, false)
+      button.doBounce = true
+    button.events.onInputOut.add ->
+      button.animations.stop()
+      button.doBounce = false
+    button.doBounce = false
+    buttonList.push(button)
+    button
+
+
+  # call this after hall is chosen, to set up game/keys 
+  postHall = (idx)->
+    console.log('chose hall' + idx)
+    hallChosen = true
+    for button in buttonList
+      button.setOverSound(null)
+      button.setUpSound(null)
+    # Add bird
+    bird = game.add.sprite(0, 0, "bird" + idx)
+    hall.bringToTop()
+    bird.anchor.setTo 0.5, 0.5
+    bird.animations.add "fly", [
+      0
+      1
+      2
+      1
+    ], 10, true
+    bird.body.collideWorldBounds = true
+    bird.body.setPolygon(
+      24,1,
+      34,16,
+      30,32,
+      20,24,
+      12,34,
+      2,12,
+      14,2
+    )
+
+    # disable all the buttons?
+    tween = game.add.tween(hall).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+    tween.onComplete.add ->
+      for button in buttonList
+        button.destroy()
+      hall.destroy()
+    # revive bird
+    bird.revive()
 
     # Add controls
     spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
     spaceKey.onDown.add flap
-    
     game.input.onDown.add flap
-    # add hall screen
-    hall = game.add.sprite(game.world.width/2, game.world.height * 1.5, "hall")
-    hall.anchor.setTo 0.5, 0.5
-    button = game.add.button 0, 0, 'bird', ->
-      console.log('hey')
-    , this, 2, 1, 0
-    hall.addChild button
-    button.bringToTop
-    tween = game.add.tween(hall).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
-    
-    # hall.body.velocity.y = -1
+
     # RESET!
     reset()
-    return
 
   reset = ->
     spaceKey.onDown.removeAll()
@@ -384,6 +470,13 @@ main = ->
       bird.y = (game.world.height / 2) + 8 * Math.cos(game.time.now / 200)
       bird.angle = 0
 
+    if !hallChosen
+      for button in buttonList
+        if button.doBounce
+          button.y = button.trueY + 5 * Math.cos(game.time.now / 200)
+        else
+          button.y = button.trueY
+   
 
     # Scroll ground
     bg.tilePosition.x -= game.time.physicsElapsed * SPEED/5 unless gameOver
