@@ -33,5 +33,5 @@ gulp.task "server", connect.server(
 )
 
 gulp.task 'default', ['coffee', 'concat', 'connect', 'watch']
-gulp.task 'prod', ['coffee', 'concat', 'server']
-# gulp.task 'prod'
+# gulp.task 'prod', ['coffee', 'concat', 'server']
+gulp.task 'prod', ['coffee', 'concat']
