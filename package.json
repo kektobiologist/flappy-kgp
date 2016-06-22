@@ -15,7 +15,7 @@
     "bower": "^1.5.2"
   },
   "scripts": {
-    "start": "./node_modules/.bin/gulp --require coffee-script/register",
+    "start": "./node_modules/.bin/gulp prod --require coffee-script/register",
     "postinstall": "bower install"
   },
   "repository": {
