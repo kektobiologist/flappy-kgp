@@ -22,8 +22,8 @@
     "gulp-concat": "~2.1.7"
   },
   "scripts": {
-    "start": "node app.js",
-    "postinstall": "bower install && ./node_modules/.bin/gulp prod --require coffee-script/register"
+    "start": "./node_modules/.bin/gulp prod --require coffee-script/register",
+    "postinstall": "bower install"
   },
   "repository": {
     "type": "git",
