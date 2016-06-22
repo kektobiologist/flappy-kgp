@@ -173,6 +173,8 @@ main = ->
       btnname = "button" + num
       game.load.spritesheet btnname, "assets/buttons/" + btnname + ".png", 36, 26
 
+    game.load.bitmapFont('flappyfont', 'assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.xml');
+
     assets =
       spritesheet:
         bird: [
@@ -280,6 +282,10 @@ main = ->
     )
     gameOverText.anchor.setTo 0.5, 0.5
     gameOverText.scale.setTo SCALE, SCALE
+ 
+    # hallTitleText = game.add.bitmapText(0, 0, 'flappyfont', "Choose your Hall bruh", 16, 'center');
+    # hallTitleText.anchor.setTo 0.5, 0.5
+    # hallTitleText.visible = true;
 
     # Add sounds
     flapSnd = game.add.audio("flap")
@@ -306,11 +312,12 @@ main = ->
     avHeight = hall.height - 100
     for num in [1..numHalls]
       num -= 1
-      i = parseInt(num/5); 
+      i = parseInt(num/5);
       j = num%5   
       offx = -hall.width/2 + 62; 
       offy = -hall.height/2 + 100
       hall.addChild addButton(avWidth/5*j + offx, avHeight/3*i + offy, num+1)
+
     # hall.addChild buttonGroup
     # button = game.add.button 0, 0, 'bird', ->
     #   console.log('hey')
@@ -319,6 +326,7 @@ main = ->
     # button.bringToTop
     tween = game.add.tween(hall).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
 
+    
     # game.time.events.add 2000, ->
     #   # hide hall screen
     #   tween = game.add.tween(hall).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
@@ -406,7 +414,7 @@ main = ->
     score = 0
     # credits.renderable = true
     # credits.setText "see console log\nfor github url"
-    scoreText.setText "Flappy Bird"
+    scoreText.setText "Flappy Bird bruh"
     instText.setText "TOUCH TO fuck you\nbird WINGS"
     gameOverText.renderable = false
     bird.body.allowGravity = false
