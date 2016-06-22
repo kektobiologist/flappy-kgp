@@ -12,10 +12,11 @@
     "gulp-concat": "~2.1.7"
   },
   "dependencies": {
-    "bower": "^1.5.2"
+    "bower": "^1.5.2",
+    "gulp": "~3.5.2"
   },
   "scripts": {
-    "start": "./node_modules/.bin/gulp prod",
+    "start": "node app.js",
     "postinstall": "bower install"
   },
   "repository": {
