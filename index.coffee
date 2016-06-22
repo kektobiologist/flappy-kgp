@@ -31,6 +31,7 @@ invs = null
 bird = null
 ground = null
 hall = null
+gameOverPanel = null
 
 score = null
 scoreText = null
@@ -47,8 +48,9 @@ clickSnd = null
 
 tubesTimer = null
 spaceKey = null
-numHalls = 15
+numHalls = 12
 buttonList = null
+leaderboardButton = null
 githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=hyspace&repo=flappy&type=watch&count=true&size=large"
   allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
 
@@ -142,6 +144,13 @@ main = ->
     # Stop spawning tubes
     game.time.events.remove(tubesTimer)
 
+    # show game over panel
+    
+    game.time.events.add 1000, ->
+      gameOverPanel.revive()
+      gameOverPanel.bringToTop()
+      tween = game.add.tween(gameOverPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+
     # Make bird reset the game
     game.time.events.add 1000, ->
       game.input.onTap.addOnce ->
@@ -189,6 +198,8 @@ main = ->
         ground: ["assets/path.png"]
         bg: ["assets/bg2.png"]
         hall: ["assets/hall.png"]
+        gameover: ["assets/gameover-panel.png"]
+        leaderboardButton: ["assets/leaderboard.png"]
 
       audio:
         flap: ["assets/sfx_wing.mp3"]
@@ -282,7 +293,19 @@ main = ->
     )
     gameOverText.anchor.setTo 0.5, 0.5
     gameOverText.scale.setTo SCALE, SCALE
- 
+  
+    # game over panel
+    gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover" )
+    gameOverPanel.anchor.setTo 0.5, 0.5
+    gameOverPanel.kill()
+    leaderboardButton = game.add.button 0, 0, 'leaderboardButton', ->
+      tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+      tween.onComplete.add ->
+        gameOverPanel.kill()
+    , this
+    leaderboardButton.anchor.setTo 0.5, 0.5
+
+    gameOverPanel.addChild leaderboardButton
     # hallTitleText = game.add.bitmapText(0, 0, 'flappyfont', "Choose your Hall bruh", 16, 'center');
     # hallTitleText.anchor.setTo 0.5, 0.5
     # hallTitleText.visible = true;
@@ -306,17 +329,18 @@ main = ->
     # something
     console.log("choosing hall...")
     # add hall screen
+    swooshSnd.play()
     hall = game.add.sprite(game.world.width/2, game.world.height * 1.5, "hall")
     hall.anchor.setTo 0.5, 0.5
     avWidth = hall.width - 50
     avHeight = hall.height - 100
     for num in [1..numHalls]
       num -= 1
-      i = parseInt(num/5);
-      j = num%5   
-      offx = -hall.width/2 + 62; 
-      offy = -hall.height/2 + 100
-      hall.addChild addButton(avWidth/5*j + offx, avHeight/3*i + offy, num+1)
+      i = parseInt(num/4);
+      j = num%4
+      offx = -hall.width/2 + 72; 
+      offy = -hall.height/2 + 120
+      hall.addChild addButton(avWidth/4*j + offx, avHeight/3*i + offy, num+1)
 
     # hall.addChild buttonGroup
     # button = game.add.button 0, 0, 'bird', ->
@@ -347,8 +371,9 @@ main = ->
       1
     ], 10, true
     button.trueY = y
-    button.setOverSound(hoverSnd)
-    button.setUpSound(clickSnd)
+    # using click for hover, and swoosh for click...
+    button.setOverSound(clickSnd)
+    button.setUpSound(swooshSnd)
     button.events.onInputOver.add ->
       button.play("onHover", 10, true, false)
       button.doBounce = true
@@ -414,8 +439,8 @@ main = ->
     score = 0
     # credits.renderable = true
     # credits.setText "see console log\nfor github url"
-    scoreText.setText "Flappy Bird bruh"
-    instText.setText "TOUCH TO fuck you\nbird WINGS"
+    scoreText.setText "Flappy Bird 2.2 Edition"
+    instText.setText "TOUCH TO FLY\nFLAP bird WINGS"
     gameOverText.renderable = false
     bird.body.allowGravity = false
     bird.reset game.world.width * 0.3, game.world.height / 2
