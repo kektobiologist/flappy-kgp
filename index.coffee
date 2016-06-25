@@ -140,7 +140,6 @@ main = ->
       inv.body.velocity.x = 0
       return
 
-
     # Stop spawning tubes
     game.time.events.remove(tubesTimer)
 
@@ -150,15 +149,28 @@ main = ->
       gameOverPanel.revive()
       gameOverPanel.bringToTop()
       tween = game.add.tween(gameOverPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+      tween.onComplete.add ->
+        fn = ->
+          if gameOverPanel.alive
+            tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+            swooshSnd.play()
+            # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
+            spaceKey.onDown.removeAll()
+            bg.events.onInputDown.removeAll()
+            tween.onComplete.add ->
+              gameOverPanel.kill()
+              reset()
+              # swooshSnd.play()
+          else
+            reset()
+            # swooshSnd.play()
+        bg.events.onInputDown.addOnce fn
+        spaceKey.onDown.addOnce fn
+      swooshSnd.play()
 
     # Make bird reset the game
-    game.time.events.add 1000, ->
-      game.input.onTap.addOnce ->
-        reset()
-        swooshSnd.play()
-      spaceKey.onDown.addOnce ->
-        reset()
-        swooshSnd.play()
+    # game.time.events.add 1000, ->
+      
 
     hurtSnd.play()
     return
@@ -234,7 +246,9 @@ main = ->
 
     # Draw bg
     bg = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'bg')
-
+    # enable input. now put all global mouse events on bg.
+    bg.inputEnabled = true;
+    bg.input.priorityID = 0; # lower priority
     # dummy bird
     bird = game.add.sprite(0, 0)
     # Credits 'yo
@@ -299,9 +313,12 @@ main = ->
     gameOverPanel.anchor.setTo 0.5, 0.5
     gameOverPanel.kill()
     leaderboardButton = game.add.button 0, 0, 'leaderboardButton', ->
-      tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
-      tween.onComplete.add ->
-        gameOverPanel.kill()
+      # bg.events.onInputDown.removeAll()
+      {}
+      # tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+      # swooshSnd.play()
+      # tween.onComplete.add ->
+      #   gameOverPanel.kill()
     , this
     leaderboardButton.anchor.setTo 0.5, 0.5
 
@@ -340,7 +357,9 @@ main = ->
       j = num%4
       offx = -hall.width/2 + 72; 
       offy = -hall.height/2 + 120
-      hall.addChild addButton(avWidth/4*j + offx, avHeight/3*i + offy, num+1)
+      x = Math.round(avWidth/4*j + offx)
+      y = Math.round(avHeight/3*i + offy)
+      hall.addChild addButton(x, y, num+1)
 
     # hall.addChild buttonGroup
     # button = game.add.button 0, 0, 'bird', ->
@@ -425,15 +444,17 @@ main = ->
     # Add controls
     spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
     spaceKey.onDown.add flap
-    game.input.onDown.add flap
-
+    bg.events.onInputDown.add flap
+    bg.events.onInputDown.add ->
+      console.log("down pressed?")
     # RESET!
     reset()
 
   reset = ->
     spaceKey.onDown.removeAll()
-    game.input.onTap.removeAll()
+    bg.events.onInputDown.removeAll()
     spaceKey.onDown.add flap    
+    bg.events.onInputDown.add flap
     gameStarted = false
     gameOver = false
     score = 0
@@ -451,9 +472,11 @@ main = ->
     return
 
   start = ->
-
+    # console.log("start called")
     # START!
     gameStarted = true
+    # remove timer here for good measure. luckily doesn't break even if already removed
+    game.time.events.remove(tubesTimer)
     # credits.renderable = false
     bird.body.allowGravity = true
     bird.body.gravity.y = GRAVITY

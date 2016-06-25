@@ -9,13 +9,13 @@ gulp.task 'coffee', ->
   gulp.src ['index.coffee']
   .pipe coffee( bare: true ).on('error', gutil.log)
   .pipe gulp.dest 'tmp'
+  .pipe connect.reload()
 
 gulp.task 'concat', ->
-  gulp.src ['bower_components/phaser/build/phaser.js', 'tmp/index.js']
+  gulp.src ['bower_components/phaser/build/phaser.js']
   .pipe concat('index.min.js')
-  # .pipe uglify()
+  .pipe uglify()
   .pipe gulp.dest '.'
-  .pipe connect.reload()
 
 gulp.task 'watch', ->
   gulp.watch ['index.coffee', '!gulpfile.coffee'], ['coffee']
