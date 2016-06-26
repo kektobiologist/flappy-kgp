@@ -3,7 +3,7 @@ SPEED = 160
 GRAVITY = 1100
 FLAP = 320
 SPAWN_RATE = 1 / 1200
-OPENING = 100
+OPENING = 100+20
 SCALE = 1
 
 HEIGHT = 384
@@ -23,6 +23,35 @@ deadTubeTops = []
 deadTubeBottoms = []
 deadInvs = []
 
+# dummy leaderboard
+lb = [
+
+    name: 'Arpit'
+    score: '58'
+    hall: 0
+  ,
+    name: 'Apoorv'
+    score: '2'
+    hall: 3
+  ,
+    name: 'Soumyadeep'
+    score: '10'
+    hall: 3
+  , 
+    name: 'Vivek'
+    score: '5'
+    hall: 3
+  , 
+    name: 'Vikrant'
+    score: '1'
+    hall: 3
+  , 
+    name: 'Arkanath'
+    score: '100'
+    hall: 6
+]
+hallList = ['AZ', 'NH', 'PT', 'RP', 'RK', 'LLR', 'MS', 'LBS', 'SN', 'MT', 'MMM', 'HJB']
+
 hallChosen = false
 bg = null
 # credits = null
@@ -32,11 +61,15 @@ bird = null
 ground = null
 hall = null
 gameOverPanel = null
+lbPanel = null
 
 score = null
 scoreText = null
 instText = null
 gameOverText = null
+tryAgainText = null
+gameOverScoreTxt1 = null
+gameOverScoreTxt2 = null
 
 flapSnd = null
 scoreSnd = null
@@ -119,19 +152,70 @@ main = ->
     scoreSnd.play()
     return
 
+  showLeaderBoard = ->
+    console.log('show leaderboard called')
+    # move the game over panel first
+    leaderboardButton.input.enabled = false
+    if gameOverPanel.alive
+      tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+      swooshSnd.play()
+      # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
+      spaceKey.onDown.removeAll()
+      bg.events.onInputDown.removeAll()
+      tween.onComplete.add ->
+        gameOverPanel.kill()
+        lbPanel.revive()
+        lbPanel.bringToTop()
+        # bring up the leaderboard
+        tween = game.add.tween(lbPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+        # display all the shit
+        txtRank = ''
+        txtName = ''
+        txtScore = ''
+        for i in [0..lb.length-1]
+          txtRank += '\n' + (i+1)
+          txtName += '\n' + lb[i].name
+          txtScore += '\n' + lb[i].score
+
+        lbPanel.children[0].setText txtRank
+        lbPanel.children[1].setText txtName
+        lbPanel.children[2].setText txtScore
+
+          # console.log 'setting text'
+          # lbPanel.children[i].setText (i+1) + '\t\t\t\t' + lb[i].name + '\t\t\t\t\t' +lb[i].score
+        # click/space to remove leaderBoard and go back to reset state:
+        tween.onComplete.add ->
+          fn = ->
+            if lbPanel.alive
+              tween = game.add.tween(lbPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+              swooshSnd.play()
+              # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
+              spaceKey.onDown.removeAll()
+              bg.events.onInputDown.removeAll()
+              tween.onComplete.add ->
+                lbPanel.kill()
+                reset()
+                # swooshSnd.play()
+            else
+              reset()
+          bg.events.onInputDown.addOnce fn
+          spaceKey.onDown.addOnce fn
+
   setGameOver = ->
     gameOver = true
     bird.body.velocity.y = 100 if bird.body.velocity.y > 0
     bird.animations.stop()
     bird.frame = 1
-    instText.setText "TOUCH\nTO TRY AGAIN"
-    instText.renderable = true
+    # instText.setText "TOUCH\nTO TRY AGAIN"
+    # instText.renderable = true
     hiscore = window.localStorage.getItem("hiscore")
     hiscore = (if hiscore then hiscore else score)
     hiscore = (if score > parseInt(hiscore, 10) then score else hiscore)
     window.localStorage.setItem "hiscore", hiscore
-    gameOverText.setText "GAMEOVER\n\nHIGH SCORE\n\n" + hiscore
-    gameOverText.renderable = true
+    # gameOverText.setText "GAMEOVER\n\nHIGH SCORE\n\n" + hiscore
+    # gameOverText.renderable = true
+    gameOverScoreTxt1.setText score
+    gameOverScoreTxt2.setText hiscore
 
     # Stop all tubes
     tubes.forEachAlive (tube) ->
@@ -148,13 +232,19 @@ main = ->
     # show game over panel
     
     game.time.events.add 1000, ->
+      spaceKey.onDown.removeAll()
+      bg.events.onInputDown.removeAll()
       gameOverPanel.revive()
+      leaderboardButton.input.enabled = false
       gameOverPanel.bringToTop()
       tween = game.add.tween(gameOverPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
       tween.onComplete.add ->
+        leaderboardButton.input.enabled = true
         fn = ->
+          leaderboardButton.input.enabled = false
           if gameOverPanel.alive
             tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+            # console.log('setGameOver click cb called')
             swooshSnd.play()
             # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
             spaceKey.onDown.removeAll()
@@ -213,6 +303,11 @@ main = ->
           36
           26
         ]
+        leaderboard: [
+          "assets/leaderboard.png"
+          52
+          29
+        ]
 
       image:
         tubeTop: ["assets/tube1.png"]
@@ -221,7 +316,7 @@ main = ->
         bg: ["assets/bg2.png"]
         hall: ["assets/hall.png"]
         gameover: ["assets/gameover-panel.png"]
-        leaderboardButton: ["assets/leaderboard.png"]
+        lbPanel: ["assets/lbPanel.png"]
 
       audio:
         flap: ["assets/sfx_wing.mp3"]
@@ -252,11 +347,12 @@ main = ->
     document.querySelector('#loading').style.display = 'none'
 
     # Set world dimensions
-    Phaser.Canvas.setSmoothingEnabled(game.context, false)
-    game.scaleMode = Phaser.ScaleManager.SHOW_ALL
-    # game.scale.setScreenSize(true)
-    game.world.width = WIDTH
-    game.world.height = HEIGHT
+    game.scale.pageAlignVertically = true
+    # game.scale.pageAlignHorizontally = true
+    game.smoothed = false
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
+    game.scale.windowConstraints.bottom = "visual";
+    game.scale.setGameSize(WIDTH, HEIGHT)
 
     # Draw bg
     bg = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'bg')
@@ -322,23 +418,107 @@ main = ->
     gameOverText.anchor.setTo 0.5, 0.5
     gameOverText.scale.setTo SCALE, SCALE
   
+    # leaderboard panel
+    lbPanel = game.add.sprite game.world.width / 2, game.world.height * 1.5, "lbPanel"
+    lbPanel.anchor.setTo 0.5, 0.5
+    lbPanel.kill()
+
+    # add text fields to lbpanel. one field per column.
+    txtRank = game.add.text -170, 0, "",
+      font: "16px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    txtRank.anchor.setTo 0.5, 0.5
+    txtName = game.add.text 20, 0, "",
+      font: "16px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "left"
+    txtName.anchor.setTo 0.5, 0.5
+    txtScore = game.add.text 150, 0, "",
+      font: "16px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "right"
+    txtScore.anchor.setTo 0.5, 0.5
+    lbPanel.addChild txtRank
+    lbPanel.addChild txtName
+    lbPanel.addChild txtScore
+    # for i in [1..lb.length]
+    #   txt = game.add.text -150, 30 * (lb.length/2 - i) + 30, "",
+    #     font: "16px \"Press Start 2P\""
+    #     fill: "#fff"
+    #     stroke: "#430"
+    #     strokeThickness: 4
+    #     align: "left"
+    #   txt.anchor.setTo 0
+    #   lbPanel.addChild txt
     # game over panel
     gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover" )
     gameOverPanel.anchor.setTo 0.5, 0.5
     gameOverPanel.kill()
-    leaderboardButton = game.add.button 0, 0, 'leaderboardButton', ->
-      # bg.events.onInputDown.removeAll()
-      {}
-      # tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
-      # swooshSnd.play()
-      # tween.onComplete.add ->
-      #   gameOverPanel.kill()
-    , this
-    leaderboardButton.anchor.setTo 0.5, 0.5
 
+    tryAgainText = game.add.text(0, gameOverPanel.height / 2 - 20, "Touch to Try Again",
+      font: "8px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+    tryAgainText.anchor.setTo 0.5, 0.5
+    gameOverPanel.addChild tryAgainText
+
+    gameOverScoreFixedTxt = gameOverScoreFixedTxt = game.add.text(gameOverPanel.width/4-10, -30, "Score\n\nBest",
+      font: "24px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "left"
+    )
+    gameOverScoreFixedTxt.anchor.setTo 0, 0
+    gameOverPanel.addChild gameOverScoreFixedTxt
+
+    gameOverScoreTxt1 = game.add.text(gameOverPanel.width/4-10, 0, "",
+      font: "16px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "left"
+    )
+    gameOverScoreTxt1.anchor.setTo 0, 0
+    gameOverPanel.addChild gameOverScoreTxt1
+
+    gameOverScoreTxt2 = game.add.text(gameOverPanel.width/4-10, 68, "",
+      font: "16px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "left"
+    )
+    gameOverScoreTxt2.anchor.setTo 0, 0
+    gameOverPanel.addChild gameOverScoreTxt2
+    leaderboardButton = game.add.button -100, 20, 'leaderboard', showLeaderBoard, this, 0, 0, 1
+
+    leaderboardButton.events.onInputUp.add ->
+      clickSnd.play()
+    #   console.log('sigh')
+    # leaderboardButton.events.onInputOver.add ->
+    #   hoverSnd.play()
+    # leaderboardButton.setUpSound(hoverSnd)
+    # leaderboardButton.setOverSound(clickSnd)
+    leaderboardButton.scale.setTo 2, 2
+    leaderboardButton.anchor.setTo 0.5, 0.5
+    leaderboardButton.smoothed = false
     gameOverPanel.addChild leaderboardButton
     # hallTitleText = game.add.bitmapText(0, 0, 'flappyfont', "Choose your Hall bruh", 16, 'center');
-    # hallTitleText = game.add.bitmapText(this.game.width/2, 10, 'flappyfont', "Hello World", 24);
+    # hallTitleText = game.add.bitmapText(0, -50, 'flappyfont', "Hello World", 24);
+    # hallTitleText.anchor.set 0.5
+    
+
     # hallTitleText.anchor.setTo 0.5, 0.5
     # hallTitleText.visible = true;
 
@@ -364,6 +544,24 @@ main = ->
     # add hall screen
     swooshSnd.play()
     hall = game.add.sprite(game.world.width/2, game.world.height * 1.5, "hall")
+    # style = { font: "30px Arial", fill: "#ffffff" };  
+    # hallTitleText = game.add.text(0, 0, "0", style);
+    # hallTitleText = game.add.bitmapText(0, -100, 'flappyfont', "Choose your Hall", 24);
+    hallTitleText = game.add.text(0, -100, "Choose your Hall",
+      font: "30px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+
+    
+    hallTitleText.setText "Choose Your Hall"
+    hallTitleText.renderable = true
+    hallTitleText.anchor.setTo 0.5, 0.5
+    # hallTitleText.anchor.set 0.5
+    hall.addChild hallTitleText
+    # hall.addChild(hall)
     hall.anchor.setTo 0.5, 0.5
     avWidth = hall.width - 50
     avHeight = hall.height - 100
@@ -394,9 +592,11 @@ main = ->
     #   postHall()
 
   addButton = (x, y, idx) ->
+    
     button = game.add.button x, y, 'button' + idx, ->
       postHall(idx) unless hallChosen
     , this, 2, 1, 0, 1
+    button.smoothed = false
     button.anchor.setTo 0.5, 0.5
     # console.log('added btton at' + x + y)
     button.animations.add "onHover", [
@@ -406,6 +606,15 @@ main = ->
       1
     ], 10, true
     button.trueY = y
+    btnTxt = game.add.text(0, 20, hallList[idx-1],
+      font: "16px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+    btnTxt.anchor.setTo 0.5, 0.5
+    button.addChild btnTxt
     # using click for hover, and swoosh for click...
     button.setOverSound(clickSnd)
     button.setUpSound(swooshSnd)
@@ -439,7 +648,16 @@ main = ->
       1
     ], 10, true
     bird.body.collideWorldBounds = true
-
+    btnTxt = game.add.text(0, 20, hallList[idx-1],
+      font: "16px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+    btnTxt.anchor.setTo 0.5, 0.5
+    bird.addChild btnTxt
+    bird.body.setSize bird.body.width, bird.body.height + 16
     # can't use polygons in arcade physics..
     # bird.body.setPolygon(
     #   24,1,
@@ -458,7 +676,9 @@ main = ->
         button.destroy()
       hall.destroy()
     # revive bird
+    bird.angle = 0
     bird.revive()
+
 
     # Add controls
     spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
@@ -482,6 +702,7 @@ main = ->
     scoreText.setText "Flappy Bird 2.2 Edition"
     instText.setText "TOUCH TO FLY\nFLAP bird WINGS"
     gameOverText.renderable = false
+    bird.smoothed = true
     bird.body.allowGravity = false
     bird.reset game.world.width * 0.3, game.world.height / 2
     bird.angle = 0
