@@ -1,0 +1,16 @@
+{ 
+    
+    "bird1": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   33, 21  ,  11, 25  ,  1, 15  ,  1, 9  ,  31, 13  ,  35, 15  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   31, 13  ,  1, 9  ,  13, 1  ,  25, 1  ,  31, 7  ]
+        }
+    ]
+}

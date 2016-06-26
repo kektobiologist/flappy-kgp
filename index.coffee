@@ -74,6 +74,7 @@ main = ->
       tube.reset(game.world.width, tubeY)
     else
       tube = tubes.create(game.world.width, tubeY, tubeKey)
+      game.physics.arcade.enableBody(tube)
       tube.body.allowGravity = false
 
     # Move to the left
@@ -104,6 +105,7 @@ main = ->
       inv = deadInvs.pop().revive().reset(toptube.x + toptube.width / 2, 0)
     else
       inv = invs.create(toptube.x + toptube.width / 2, 0)
+      game.physics.arcade.enableBody(inv)
       inv.width = 2
       inv.height = game.world.height
       inv.body.allowGravity = false
@@ -194,9 +196,17 @@ main = ->
       btnname = "button" + num
       game.load.spritesheet btnname, "assets/buttons/" + btnname + ".png", 36, 26
 
-    game.load.bitmapFont('flappyfont', 'assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.xml');
+    # game.load.bitmapFont('flappyfont', 'assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.xml');
+    # game.load.bitmapFont('flappyfont', 'assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.fnt');
+    # game.load.physics('birdphysics', 'assets/birds/bird.json');
 
     assets =
+      physics:
+        birdphysics: ['assets/birds/bird.json']
+
+      bitmapFont:
+        flappyfont: ['assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.fnt']
+
       spritesheet:
         bird: [
           "assets/bird.png"
@@ -232,6 +242,10 @@ main = ->
     return
 
   create = ->
+
+    # enabling physics. don't know if necessary or not?
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
     console.log("%chttps://github.com/hyspace/flappy", "color: black; font-size: x-large");
     ratio = window.innerWidth / window.innerHeight
     document.querySelector('#github').innerHTML = githubHtml if ratio > 1.15 or ratio < 0.7
@@ -239,8 +253,8 @@ main = ->
 
     # Set world dimensions
     Phaser.Canvas.setSmoothingEnabled(game.context, false)
-    game.stage.scaleMode = Phaser.StageScaleMode.SHOW_ALL
-    game.stage.scale.setScreenSize(true)
+    game.scaleMode = Phaser.ScaleManager.SHOW_ALL
+    # game.scale.setScreenSize(true)
     game.world.width = WIDTH
     game.world.height = HEIGHT
 
@@ -324,11 +338,13 @@ main = ->
 
     gameOverPanel.addChild leaderboardButton
     # hallTitleText = game.add.bitmapText(0, 0, 'flappyfont', "Choose your Hall bruh", 16, 'center');
+    # hallTitleText = game.add.bitmapText(this.game.width/2, 10, 'flappyfont', "Hello World", 24);
     # hallTitleText.anchor.setTo 0.5, 0.5
     # hallTitleText.visible = true;
 
     # Add sounds
     flapSnd = game.add.audio("flap")
+    flapSnd.allowMultiple = true
     scoreSnd = game.add.audio("score")
     hurtSnd = game.add.audio("hurt")
     fallSnd = game.add.audio("fall")
@@ -413,6 +429,7 @@ main = ->
       button.setUpSound(null)
     # Add bird
     bird = game.add.sprite(0, 0, "bird" + idx)
+    game.physics.arcade.enableBody(bird)
     hall.bringToTop()
     bird.anchor.setTo 0.5, 0.5
     bird.animations.add "fly", [
@@ -422,15 +439,17 @@ main = ->
       1
     ], 10, true
     bird.body.collideWorldBounds = true
-    bird.body.setPolygon(
-      24,1,
-      34,16,
-      30,32,
-      20,24,
-      12,34,
-      2,12,
-      14,2
-    )
+
+    # can't use polygons in arcade physics..
+    # bird.body.setPolygon(
+    #   24,1,
+    #   34,16,
+    #   30,32,
+    #   20,24,
+    #   12,34,
+    #   2,12,
+    #   14,2
+    # )
 
     # disable all the buttons?
     tween = game.add.tween(hall).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
@@ -505,13 +524,13 @@ main = ->
           bird.animations.play()
 
         # Check game over
-        game.physics.overlap bird, tubes, ->
+        game.physics.arcade.overlap bird, tubes, ->
           setGameOver()
           fallSnd.play()
         setGameOver() if not gameOver and bird.body.bottom >= GROUND_Y
 
         # Add score
-        game.physics.overlap bird, invs, addScore
+        game.physics.arcade.overlap bird, invs, addScore
 
       else
         # rotate the bird to make sure its head hit ground
