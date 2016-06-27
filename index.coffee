@@ -3,7 +3,7 @@ SPEED = 160
 GRAVITY = 1100
 FLAP = 320
 SPAWN_RATE = 1 / 1200
-OPENING = 100+20
+OPENING = 100+10
 SCALE = 1
 
 HEIGHT = 384
@@ -201,6 +201,22 @@ main = ->
           bg.events.onInputDown.addOnce fn
           spaceKey.onDown.addOnce fn
 
+  addHallSprite = (x, y, idx) ->
+    sprite = game.add.sprite x, y, 'button' + (idx+1)
+    sprite.smoothed = false
+    sprite.anchor.setTo 0.5, 0.5
+    # console.log('added btton at' + x + y)
+    sprTxt = game.add.text(0, 20, hallList[idx],
+      font: "16px \"04b_19regular\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+    sprTxt.anchor.setTo 0.5, 0.5
+    sprite.addChild sprTxt
+    sprite
+    
   setGameOver = ->
     gameOver = true
     bird.body.velocity.y = 100 if bird.body.velocity.y > 0
@@ -448,6 +464,12 @@ main = ->
     lbPanel.addChild txtRank
     lbPanel.addChild txtName
     lbPanel.addChild txtScore
+
+    # add sprites for each position on lb
+
+    for i in [0..lb.length-1]
+      spr = addHallSprite -120, -100 + i*50, 0
+      lbPanel.addChild spr
     # for i in [1..lb.length]
     #   txt = game.add.text -150, 30 * (lb.length/2 - i) + 30, "",
     #     font: "16px \"Press Start 2P\""
