@@ -6,6 +6,7 @@ SPAWN_RATE = 1 / 1200
 OPENING = 100
 SCALE = 1
 
+MAXLB = 6
 HEIGHT = 384
 # WIDTH = 288
 WIDTH = 500
@@ -28,27 +29,27 @@ lb = [
 
     name: 'Arpit'
     score: '58'
-    hall: 0
+    hall: 'AZ'
   ,
     name: 'Apoorv'
     score: '2'
-    hall: 3
+    hall: 'NH'
   ,
-    name: 'Soumyadeep'
-    score: '10'
-    hall: 3
-  , 
-    name: 'Vivek'
-    score: '5'
-    hall: 3
-  , 
+  #   name: 'Soumyadeep'
+  #   score: '10'
+  #   hall: 'RP'
+  # , 
+  #   name: 'Vivek'
+  #   score: '5'
+  #   hall: 'RP'
+  # , 
     name: 'Vikrant'
     score: '1'
-    hall: 3
+    hall: 'RP'
   , 
     name: 'Arkanath'
     score: '100'
-    hall: 6
+    hall: 'MS'
 ]
 hallList = ['AZ', 'MT', 'RP', 'SN', 'NH', 'PT', 'RK', 'LLR', 'MS', 'LBS', 'MMM', 'HJB']
 chosenHall = null
@@ -152,7 +153,22 @@ main = ->
     scoreSnd.play()
     return
 
+  sanitizeLB = ->
+    lb.sort( (a, b) ->
+      return parseInt(a.score) < parseInt(b.score)
+    )
+    while lb.length < MAXLB
+      # add dummy 
+      lb.push 
+        name: '---'
+        score: '-1'
+        hall: 'DUMMY2'
+    console.log lb
+
+
   showLeaderBoard = ->
+    sanitizeLB()
+    # good idea to sanitize the lb variable here.
     console.log('show leaderboard called')
     # move the game over panel first
     leaderboardButton.input.enabled = false
@@ -173,11 +189,24 @@ main = ->
         txtName = ''
         txtScore = ''
         for i in [0..lb.length-1]
-          txtRank += '\n' + (i+1)
-          txtName += '\n' + lb[i].name
-          txtScore += '\n' + lb[i].score
-          # lbPanel.children[3+i].setFrame hallList[3] + '/2'
-        lbPanel.children[3].frameName = 'MT/2'
+          # check if dummy
+          if lb[i].score < 0
+            txtRank += '\n-'
+            txtName += '\n---'
+            txtScore += '\n---'
+            lbPanel.children[3+i].kill()
+          else
+            txtRank += '\n' + (i+1)
+            txtName += '\n' + lb[i].name
+            txtScore += '\n' + lb[i].score
+            hallSprite = lbPanel.children[3+i]
+            hallSprite.revive()
+            hallSprite.frameName = lb[i].hall + '/2'
+          # hallSprite.animations.stop()
+          # hallSprite.animations.destroy()
+          # hallSprite.animations.add('fly', Phaser.Animation.generateFrameNames(hallList[lb[i].hall] + '/', 1, 3, '', 1), 10, true);
+          # hallSprite.animations.play('fly')
+            hallSprite.children[0].setText lb[i].hall
         lbPanel.children[0].setText txtRank
         lbPanel.children[1].setText txtName
         lbPanel.children[2].setText txtScore
@@ -205,8 +234,8 @@ main = ->
   addHallSprite = (x, y, idx) ->
     # 0 indexed idx
     sprite = game.add.sprite x, y, 'sheet',   hallList[idx] + '/2'
-    sprite.scale.setTo 1.6, 1.6
-    sprite.smoothed = true
+    sprite.scale.setTo 2, 2
+    sprite.smoothed = false
     sprite.anchor.setTo 0.5, 0.5
     # console.log('added btton at' + x + y)
     # sprTxt = game.add.text(0, 20, hallList[idx],
@@ -443,35 +472,48 @@ main = ->
     lbPanel.kill()
 
     # add text fields to lbpanel. one field per column.
-    txtRank = game.add.text -170, 0, "",
+    txtRank = game.add.text -170, -10, "",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
       stroke: "#430"
       strokeThickness: 4
       align: "center"
     txtRank.anchor.setTo 0.5, 0.5
-    txtName = game.add.text 20, 0, "",
+    txtName = game.add.text 20, -10, "",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
       stroke: "#430"
       strokeThickness: 4
       align: "left"
     txtName.anchor.setTo 0.5, 0.5
-    txtScore = game.add.text 150, 0, "",
+    txtScore = game.add.text 150, -10, "",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
       stroke: "#430"
       strokeThickness: 4
       align: "right"
     txtScore.anchor.setTo 0.5, 0.5
+    for txt in [txtRank, txtName, txtScore]
+      txt.lineSpacing = 15
     lbPanel.addChild txtRank
     lbPanel.addChild txtName
     lbPanel.addChild txtScore
 
     # add sprites for each position on lb
 
-    for i in [0..lb.length-1]
-      spr = addHallSprite -120, -56 + i*26, 0
+    for i in [0..MAXLB-1]
+      spr = addHallSprite -120, -105 + i*41, 0
+      btnTxt = game.add.text(0, 10, '',
+        font: "16px \"04b_19regular\""
+        fill: "#fff"
+        stroke: "#430"
+        strokeThickness: 4
+        align: "center"
+      )
+      btnTxt.scale.setTo 0.5, 0.5
+      btnTxt.smoothed = false
+      btnTxt.anchor.setTo 0.5, 0.5
+      spr.addChild btnTxt
       lbPanel.addChild spr
     # for i in [1..lb.length]
     #   txt = game.add.text -150, 30 * (lb.length/2 - i) + 30, "",
@@ -572,7 +614,7 @@ main = ->
     # style = { font: "30px Arial", fill: "#ffffff" };  
     # hallTitleText = game.add.text(0, 0, "0", style);
     # hallTitleText = game.add.bitmapText(0, -100, 'flappyfont', "Choose your Hall", 24);
-    hallTitleText = game.add.text(0, -100, "Choose your Hall",
+    hallTitleText = game.add.text(0, -100, "Choose Carefully",
       font: "30px \"04b_19regular\""
       fill: "#fff"
       stroke: "#430"
@@ -581,7 +623,6 @@ main = ->
     )
 
     
-    hallTitleText.setText "Choose Your Hall"
     hallTitleText.renderable = true
     hallTitleText.anchor.setTo 0.5, 0.5
     # hallTitleText.anchor.set 0.5
