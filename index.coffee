@@ -3,7 +3,7 @@ SPEED = 160
 GRAVITY = 1100
 FLAP = 320
 SPAWN_RATE = 1 / 1200
-OPENING = 100+10
+OPENING = 100
 SCALE = 1
 
 HEIGHT = 384
@@ -50,8 +50,8 @@ lb = [
     score: '100'
     hall: 6
 ]
-hallList = ['AZ', 'NH', 'PT', 'RP', 'RK', 'LLR', 'MS', 'LBS', 'SN', 'MT', 'MMM', 'HJB']
-
+hallList = ['AZ', 'MT', 'RP', 'SN', 'NH', 'PT', 'RK', 'LLR', 'MS', 'LBS', 'MMM', 'HJB']
+chosenHall = null
 hallChosen = false
 bg = null
 # credits = null
@@ -176,7 +176,8 @@ main = ->
           txtRank += '\n' + (i+1)
           txtName += '\n' + lb[i].name
           txtScore += '\n' + lb[i].score
-
+          # lbPanel.children[3+i].setFrame hallList[3] + '/2'
+        lbPanel.children[3].frameName = 'MT/2'
         lbPanel.children[0].setText txtRank
         lbPanel.children[1].setText txtName
         lbPanel.children[2].setText txtScore
@@ -202,26 +203,28 @@ main = ->
           spaceKey.onDown.addOnce fn
 
   addHallSprite = (x, y, idx) ->
-    sprite = game.add.sprite x, y, 'button' + (idx+1)
-    sprite.smoothed = false
+    # 0 indexed idx
+    sprite = game.add.sprite x, y, 'sheet',   hallList[idx] + '/2'
+    sprite.scale.setTo 1.6, 1.6
+    sprite.smoothed = true
     sprite.anchor.setTo 0.5, 0.5
     # console.log('added btton at' + x + y)
-    sprTxt = game.add.text(0, 20, hallList[idx],
-      font: "16px \"04b_19regular\""
-      fill: "#fff"
-      stroke: "#430"
-      strokeThickness: 4
-      align: "center"
-    )
-    sprTxt.anchor.setTo 0.5, 0.5
-    sprite.addChild sprTxt
+    # sprTxt = game.add.text(0, 20, hallList[idx],
+    #   font: "16px \"04b_19regular\""
+    #   fill: "#fff"
+    #   stroke: "#430"
+    #   strokeThickness: 4
+    #   align: "center"
+    # )
+    # sprTxt.anchor.setTo 0.5, 0.5
+    # sprite.addChild sprTxt
     sprite
     
   setGameOver = ->
     gameOver = true
     bird.body.velocity.y = 100 if bird.body.velocity.y > 0
     bird.animations.stop()
-    bird.frame = 1
+    bird.frame = hallList[chosenHall] + '/2'
     # instText.setText "TOUCH\nTO TRY AGAIN"
     # instText.renderable = true
     hiscore = window.localStorage.getItem("hiscore")
@@ -296,29 +299,29 @@ main = ->
     return
 
   preload = ->
-    for num in [1..numHalls]
-      birdname = "bird" + num
-      game.load.spritesheet birdname, "assets/birds/" + birdname + ".png", 36, 26
-      btnname = "button" + num
-      game.load.spritesheet btnname, "assets/buttons/" + btnname + ".png", 36, 26
+    # for num in [1..numHalls]
+    #   birdname = "bird" + num
+    #   game.load.spritesheet birdname, "assets/birds/" + birdname + ".png", 36, 26
+    #   btnname = "button" + num
+    #   game.load.spritesheet btnname, "assets/buttons/" + btnname + ".png", 36, 26
 
     # game.load.bitmapFont('flappyfont', 'assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.xml');
     # game.load.bitmapFont('flappyfont', 'assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.fnt');
     # game.load.physics('birdphysics', 'assets/birds/bird.json');
-
+    game.load.atlasJSONHash('sheet', 'assets/sheet.png', 'assets/sheet.json');
     assets =
-      physics:
-        birdphysics: ['assets/birds/bird.json']
+      # physics:
+        # birdphysics: ['assets/birds/bird.json']
 
       bitmapFont:
         flappyfont: ['assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.fnt']
 
       spritesheet:
-        bird: [
-          "assets/bird.png"
-          36
-          26
-        ]
+        # bird: [
+        #   "assets/bird.png"
+        #   36
+        #   26
+        # ]
         leaderboard: [
           "assets/leaderboard.png"
           52
@@ -468,7 +471,7 @@ main = ->
     # add sprites for each position on lb
 
     for i in [0..lb.length-1]
-      spr = addHallSprite -120, -100 + i*50, 0
+      spr = addHallSprite -120, -56 + i*26, 0
       lbPanel.addChild spr
     # for i in [1..lb.length]
     #   txt = game.add.text -150, 30 * (lb.length/2 - i) + 30, "",
@@ -615,26 +618,34 @@ main = ->
 
   addButton = (x, y, idx) ->
     
-    button = game.add.button x, y, 'button' + idx, ->
+    button = game.add.button x, y, 'sheet', ->
       postHall(idx) unless hallChosen
-    , this, 2, 1, 0, 1
+    , this, 
+    hallList[idx-1] + '/3', 
+    hallList[idx-1] + '/2', 
+    hallList[idx-1] + '/1', 
+    hallList[idx-1] + '/2'
     button.smoothed = false
     button.anchor.setTo 0.5, 0.5
     # console.log('added btton at' + x + y)
     button.animations.add "onHover", [
-      0
-      1
-      2
-      1
+      hallList[idx-1] + '/1'
+      hallList[idx-1] + '/2'
+      hallList[idx-1] + '/3'
+      hallList[idx-1] + '/2'
     ], 10, true
+    button.scale.setTo 2, 2
+    button.smoothed = false
     button.trueY = y
-    btnTxt = game.add.text(0, 20, hallList[idx-1],
+    btnTxt = game.add.text(0, 10, hallList[idx-1],
       font: "16px \"04b_19regular\""
       fill: "#fff"
       stroke: "#430"
       strokeThickness: 4
       align: "center"
     )
+    btnTxt.scale.setTo 0.5, 0.5
+    btnTxt.smoothed = false
     btnTxt.anchor.setTo 0.5, 0.5
     button.addChild btnTxt
     # using click for hover, and swoosh for click...
@@ -655,31 +666,35 @@ main = ->
   postHall = (idx)->
     console.log('chose hall' + idx)
     hallChosen = true
+    chosenHall = idx
     for button in buttonList
       button.setOverSound(null)
       button.setUpSound(null)
     # Add bird
-    bird = game.add.sprite(0, 0, "bird" + idx)
+    bird = game.add.sprite(0, 0, "sheet", hallList[idx-1] + '/2')
     game.physics.arcade.enableBody(bird)
     hall.bringToTop()
+    # need to scale up for small models..
+    bird.scale.setTo 2, 2
     bird.anchor.setTo 0.5, 0.5
-    bird.animations.add "fly", [
-      0
-      1
-      2
-      1
-    ], 10, true
+    bird.animations.add('fly', Phaser.Animation.generateFrameNames(hallList[idx-1] + '/', 1, 3, '', 1), 10, true);
+    # bird.animations.add "fly", [
+    #   0
+    #   1
+    #   2
+    #   1
+    # ], 10, true
     bird.body.collideWorldBounds = true
-    btnTxt = game.add.text(0, 20, hallList[idx-1],
-      font: "16px \"04b_19regular\""
-      fill: "#fff"
-      stroke: "#430"
-      strokeThickness: 4
-      align: "center"
-    )
-    btnTxt.anchor.setTo 0.5, 0.5
-    bird.addChild btnTxt
-    bird.body.setSize bird.body.width, bird.body.height + 16
+    # btnTxt = game.add.text(0, 20, hallList[idx-1],
+    #   font: "16px \"04b_19regular\""
+    #   fill: "#fff"
+    #   stroke: "#430"
+    #   strokeThickness: 4
+    #   align: "center"
+    # )
+    # btnTxt.anchor.setTo 0.5, 0.5
+    # bird.addChild btnTxt
+    # bird.body.setSize bird.body.width, bird.body.height + 16
     # can't use polygons in arcade physics..
     # bird.body.setPolygon(
     #   24,1,
@@ -724,7 +739,7 @@ main = ->
     scoreText.setText "Flappy Bird 2.2 Edition"
     instText.setText "TOUCH TO FLY\nFLAP bird WINGS"
     gameOverText.renderable = false
-    bird.smoothed = true
+    bird.smoothed = false
     bird.body.allowGravity = false
     bird.reset game.world.width * 0.3, game.world.height / 2
     bird.angle = 0
@@ -761,10 +776,10 @@ main = ->
         bird.angle = -30  if bird.angle < -30
         if bird.angle > 80
           bird.angle = 90
-          bird.animations.stop()
-          bird.frame = 1
+          bird.animations.stop('fly')
+          bird.frame = hallList[chosenHall] + '/2'
         else
-          bird.animations.play()
+          bird.animations.play('fly')
 
         # Check game over
         game.physics.arcade.overlap bird, tubes, ->
