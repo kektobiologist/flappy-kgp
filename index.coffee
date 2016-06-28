@@ -51,8 +51,10 @@ lb = [
     score: '100'
     hall: 'MS'
 ]
+
 hallList = ['AZ', 'MT', 'RP', 'SN', 'NH', 'PT', 'RK', 'LLR', 'MS', 'LBS', 'MMM', 'HJB']
 chosenHall = null
+isNameSet = false
 hallChosen = false
 bg = null
 # credits = null
@@ -62,8 +64,9 @@ bird = null
 ground = null
 hall = null
 gameOverPanel = null
+nameScreenPanel = null
 lbPanel = null
-gameOverGroup = null
+nameScreenGroup = null
 
 secretKey = null
 playerName = null
@@ -196,7 +199,7 @@ main = ->
         console.log('error sending score!')      
 
   showLeaderBoard = ->
-    playerName = playerNameInput.value
+    # playerName = playerNameInput.value
     sendScoreReq = sendScore()
     # move the game over panel first
     leaderboardButton.input.enabled = false
@@ -302,6 +305,57 @@ main = ->
     # sprite.addChild sprTxt
     sprite
     
+  # for starting and stopping focus on text field, programmatically
+  startTextInput = ->
+    bg.inputEnabled = false;
+    spaceKey.onDown.removeAll()
+    playerNameInput.startFocus();
+    playerNameInput.focus = true;
+    playerNameInput.placeHolder.visible = false;
+
+  stopTextInput = ->
+    playerNameInput.endFocus();
+    # spaceKey.onDown.add flap
+    playerNameInput.focus = false;
+    bg.inputEnabled = true;
+
+  gameOverPanelFn = ->
+    spaceKey.onDown.removeAll()
+    bg.events.onInputDown.removeAll()
+    gameOverPanel.revive()
+    leaderboardButton.input.enabled = false
+    # game.world.bringToTop(gameOverGroup)
+    # gameOverGroup.bringToTop(gameOverPanel)
+    gameOverPanel.bringToTop()
+    tween = game.add.tween(gameOverPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+    tween.onComplete.add ->
+      leaderboardButton.input.enabled = true
+      fn = ->
+        # playerName = playerNameInput.value
+        sendScore()
+        leaderboardButton.input.enabled = false
+        if gameOverPanel.alive
+          tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+          # console.log('setGameOver click cb called')
+          swooshSnd.play()
+          # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
+          spaceKey.onDown.removeAll()
+          bg.events.onInputDown.removeAll()
+          tween.onComplete.add ->
+            gameOverPanel.kill()
+            reset()
+            # swooshSnd.play()
+        else
+          reset()
+          # swooshSnd.play()
+      bg.events.onInputDown.addOnce fn
+      spaceKey.onDown.addOnce fn
+      # startTextInput()
+      # playerNameInput.addEnterCallback ->
+        # console.log('enter pressed!')
+
+    swooshSnd.play()
+
   setGameOver = ->
     gameOver = true
     bird.body.velocity.y = 100 if bird.body.velocity.y > 0
@@ -330,46 +384,21 @@ main = ->
     # Stop spawning tubes
     game.time.events.remove(tubesTimer)
 
-    # show game over panel
+    # show game over panel if name is set, else show nameScreen panel first
     
     game.time.events.add 1000, ->
-      spaceKey.onDown.removeAll()
-      bg.events.onInputDown.removeAll()
-      gameOverPanel.revive()
-      leaderboardButton.input.enabled = false
-      game.world.bringToTop(gameOverGroup)
-      # gameOverGroup.bringToTop(gameOverPanel)
-      # gameOverPanel.bringToTop()
-      tween = game.add.tween(gameOverPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
-      tween.onComplete.add ->
-        leaderboardButton.input.enabled = true
-        fn = ->
-          playerName = playerNameInput.value
-          sendScore()
-          leaderboardButton.input.enabled = false
-          if gameOverPanel.alive
-            tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
-            # console.log('setGameOver click cb called')
-            swooshSnd.play()
-            # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
-            spaceKey.onDown.removeAll()
-            bg.events.onInputDown.removeAll()
-            tween.onComplete.add ->
-              gameOverPanel.kill()
-              reset()
-              # swooshSnd.play()
-          else
-            reset()
-            # swooshSnd.play()
-        bg.events.onInputDown.addOnce fn
-        spaceKey.onDown.addOnce fn
-      swooshSnd.play()
+      if isNameSet
+        gameOverPanelFn()
+      else
+        # will add gameOverPanel as a callback. ugh.
+        nameScreenFn(gameOverPanelFn)
 
     # Make bird reset the game
     # game.time.events.add 1000, ->
       
 
     hurtSnd.play()
+
     return
 
   flap = ->
@@ -422,6 +451,7 @@ main = ->
         hall: ["assets/hall.png"]
         gameover: ["assets/gameover-panel.png"]
         lbPanel: ["assets/lbPanel.png"]
+        nameScreen: ["assets/name.png"]
 
       audio:
         flap: ["assets/sfx_wing.mp3"]
@@ -500,8 +530,8 @@ main = ->
     invs = game.add.group()
 
     
-    # add gameOverGroup
-    gameOverGroup = game.add.group()
+    # add nameScreenGroup
+    nameScreenGroup = game.add.group(undefined, undefined, false, true, Phaser.Physics.ARCADE)
     # Add ground
     ground = game.add.tileSprite(0, GROUND_Y, WIDTH, GROUND_HEIGHT, "ground")
     ground.tileScale.setTo SCALE, SCALE
@@ -597,9 +627,17 @@ main = ->
     #   txt.anchor.setTo 0
     #   lbPanel.addChild txt
     # game over panel
-    gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover" ,0, gameOverGroup)
+    nameScreenPanel = game.add.sprite(0, 0, "nameScreen", undefined, nameScreenGroup)
+    nameScreenPanel.anchor.setTo 0.5, 0.5
+    nameScreenPanel.kill()
+
+    nameScreenGroup.x = game.world.width/2
+    nameScreenGroup.y = game.world.height * 1.5
+
+    gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover")
     gameOverPanel.anchor.setTo 0.5, 0.5
     gameOverPanel.kill()
+
 
     tryAgainText = game.add.text(0, gameOverPanel.height / 2 - 20, "Touch to Try Again",
       font: "8px \"Press Start 2P\""
@@ -654,22 +692,42 @@ main = ->
     leaderboardButton.smoothed = false
     gameOverPanel.addChild leaderboardButton
 
+    nsTop = game.add.text(0, -30, "Enter Name",
+      font: "16px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+    nsTop.anchor.setTo 0.5, 0.5
+    nameScreenPanel.addChild(nsTop)
+    nsBot = game.add.text(0, 60, "Press Enter to continue",
+      font: "8px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "center"
+    )
+    nsBot.anchor.setTo 0.5, 0.5
+    nameScreenPanel.addChild(nsBot)
     # add text input for name! can't add as a child, so will do jugaad...
     # nameInput = game.add.inputField -100, 50
-    playerNameInput = game.add.inputField -100, 50,
+    playerNameInput = game.add.inputField -75, 10,
       font: '16px "Press Start 2P"'
       fill: '#430'
-      # cursorColor: "#00f"
+      cursorColor: "#430"
+      backgroundColor: "#ffffff" 
       placeHolder: 'name'
-      placeHolderColor: '#652'
-      height: 20
+      placeHolderColor: '#874'
+      height: 30
+      width: 150
       type: Fabrique.InputType.text
-    , gameOverGroup
+    , nameScreenGroup
+    playerNameInput.anchor.setTo 0, 0.3
       # placeHolder: 'What'
       # font: '16px "Arial"'
       # fillAlpha: 0.5
       # height: 20
-    
     # playerNameInput.anchor.setTo 0.5, 0.5
     # gameOverPanel.addChild playerNameInput
 
@@ -958,6 +1016,32 @@ main = ->
     bg.tilePosition.x -= game.time.physicsElapsed * SPEED/5 unless gameOver
     ground.tilePosition.x -= game.time.physicsElapsed * SPEED unless gameOver
     return
+
+  # name screenf ucntions... 
+  nameScreenFn = (cb)->
+    # need to bring the group to top
+    startTextInput()
+    nameScreenPanel.revive()
+    game.world.bringToTop(nameScreenGroup)
+    # nameScreenPanel.bringToTop()
+    tween = game.add.tween(nameScreenGroup).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
+    tween.onComplete.add ->
+      playerNameInput.addEnterCallback ->
+        stopTextInput()
+        isNameSet = true
+        playerName = playerNameInput.value
+        tween = game.add.tween(nameScreenGroup).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
+        swooshSnd.play()
+        tween.onComplete.add ->
+          nameScreenPanel.kill()
+          # will call cb, ie gameOverPanelFn
+          cb()
+      
+      # startTextInput()
+      # playerNameInput.addEnterCallback ->
+        # console.log('enter pressed!')
+
+    swooshSnd.play()
 
   render = ->
     if DEBUG
