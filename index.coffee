@@ -63,6 +63,7 @@ ground = null
 hall = null
 gameOverPanel = null
 lbPanel = null
+gameOverGroup = null
 
 secretKey = null
 playerName = null
@@ -336,7 +337,9 @@ main = ->
       bg.events.onInputDown.removeAll()
       gameOverPanel.revive()
       leaderboardButton.input.enabled = false
-      gameOverPanel.bringToTop()
+      game.world.bringToTop(gameOverGroup)
+      # gameOverGroup.bringToTop(gameOverPanel)
+      # gameOverPanel.bringToTop()
       tween = game.add.tween(gameOverPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
       tween.onComplete.add ->
         leaderboardButton.input.enabled = true
@@ -497,7 +500,8 @@ main = ->
     invs = game.add.group()
 
     
-
+    # add gameOverGroup
+    gameOverGroup = game.add.group()
     # Add ground
     ground = game.add.tileSprite(0, GROUND_Y, WIDTH, GROUND_HEIGHT, "ground")
     ground.tileScale.setTo SCALE, SCALE
@@ -593,7 +597,7 @@ main = ->
     #   txt.anchor.setTo 0
     #   lbPanel.addChild txt
     # game over panel
-    gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover" )
+    gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover" ,0, gameOverGroup)
     gameOverPanel.anchor.setTo 0.5, 0.5
     gameOverPanel.kill()
 
@@ -654,16 +658,20 @@ main = ->
     # nameInput = game.add.inputField -100, 50
     playerNameInput = game.add.inputField -100, 50,
       font: '16px "Press Start 2P"'
-      cursorColor: "#00f"
+      fill: '#430'
+      # cursorColor: "#00f"
+      placeHolder: 'name'
+      placeHolderColor: '#652'
       height: 20
       type: Fabrique.InputType.text
+    , gameOverGroup
       # placeHolder: 'What'
       # font: '16px "Arial"'
       # fillAlpha: 0.5
       # height: 20
     
     # playerNameInput.anchor.setTo 0.5, 0.5
-    gameOverPanel.addChild playerNameInput
+    # gameOverPanel.addChild playerNameInput
 
 
     playerNameInput.bringToTop()
