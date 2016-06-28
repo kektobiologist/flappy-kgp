@@ -64,6 +64,8 @@ hall = null
 gameOverPanel = null
 lbPanel = null
 
+secretKey = null
+playerName = null
 score = null
 scoreText = null
 instText = null
@@ -71,6 +73,8 @@ gameOverText = null
 tryAgainText = null
 gameOverScoreTxt1 = null
 gameOverScoreTxt2 = null
+
+playerNameInput = null
 
 flapSnd = null
 scoreSnd = null
@@ -91,6 +95,12 @@ githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=hyspace&repo
 floor = Math.floor
 
 main = ->
+  randomString = (length, chars) ->
+    result = '';
+    for i in [length..1]
+      result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+  
   spawntube = (openPos, flipped) ->
     tube = null
 
@@ -163,13 +173,30 @@ main = ->
         name: '---'
         score: '-1'
         hall: 'DUMMY2'
-    console.log lb
+    lb
 
+  sendScore = ->
+    # send all the scores..
+    data = 
+      score: score,
+      name: playerName,
+      hall: hallList[chosenHall],
+      key: secretKey
+
+    $.ajax
+      type: 'POST',
+      data: data,
+      dataType: 'text'
+      url: '/sendScore'
+      success: (resp)-> 
+        console.log(resp);
+      ,
+      error: ->
+        console.log('error sending score!')      
 
   showLeaderBoard = ->
-    sanitizeLB()
-    # good idea to sanitize the lb variable here.
-    console.log('show leaderboard called')
+    playerName = playerNameInput.value
+    sendScoreReq = sendScore()
     # move the game over panel first
     leaderboardButton.input.enabled = false
     if gameOverPanel.alive
@@ -188,28 +215,53 @@ main = ->
         txtRank = ''
         txtName = ''
         txtScore = ''
-        for i in [0..lb.length-1]
-          # check if dummy
-          if lb[i].score < 0
-            txtRank += '\n-'
-            txtName += '\n---'
-            txtScore += '\n---'
-            lbPanel.children[3+i].kill()
-          else
-            txtRank += '\n' + (i+1)
-            txtName += '\n' + lb[i].name
-            txtScore += '\n' + lb[i].score
-            hallSprite = lbPanel.children[3+i]
-            hallSprite.revive()
-            hallSprite.frameName = lb[i].hall + '/2'
-          # hallSprite.animations.stop()
-          # hallSprite.animations.destroy()
-          # hallSprite.animations.add('fly', Phaser.Animation.generateFrameNames(hallList[lb[i].hall] + '/', 1, 3, '', 1), 10, true);
-          # hallSprite.animations.play('fly')
-            hallSprite.children[0].setText lb[i].hall
-        lbPanel.children[0].setText txtRank
-        lbPanel.children[1].setText txtName
-        lbPanel.children[2].setText txtScore
+        # display "Loading" while youre loading the leaderbaord
+        lbPanel.children[1].setText "Loading.."
+        lbPanel.children[2].setText ""
+        lbPanel.children[0].setText ""
+        for x in [3..lbPanel.children.length-1]
+          lbPanel.children[x].kill()
+        popLB = ->
+          for i in [0..lb.length-1]
+            # check if dummy
+            if lb[i].score < 0
+              txtRank += '\n-'
+              txtName += '\n---'
+              txtScore += '\n---'
+              lbPanel.children[3+i].kill()
+            else
+              txtRank += '\n' + (i+1)
+              txtName += '\n' + lb[i].name
+              txtScore += '\n' + lb[i].score
+              hallSprite = lbPanel.children[3+i]
+              hallSprite.revive()
+              hallSprite.frameName = lb[i].hall + '/2'
+            # hallSprite.animations.stop()
+            # hallSprite.animations.destroy()
+            # hallSprite.animations.add('fly', Phaser.Animation.generateFrameNames(hallList[lb[i].hall] + '/', 1, 3, '', 1), 10, true);
+            # hallSprite.animations.play('fly')
+              hallSprite.children[0].setText lb[i].hall
+          lbPanel.children[0].setText txtRank
+          lbPanel.children[1].setText txtName
+          lbPanel.children[2].setText txtScore
+        # shoudl wait till sendScoreReq is done, before asking for leaderboard.
+        $.when(sendScoreReq).done (res) ->
+          $.ajax 
+            type: 'GET',
+            url: '/getLeaderboard'
+            success: (resp) -> 
+              # good idea to sanitize the lb variable here.
+              # lb = JSON.stringify(eval("(" + resp + ")"));
+              lb = resp
+              console.log('got lb = ' + lb)
+              sanitizeLB()
+              popLB()
+            ,
+            error: ->
+              lb = []    
+              sanitizeLB()
+              popLB()
+        
 
           # console.log 'setting text'
           # lbPanel.children[i].setText (i+1) + '\t\t\t\t' + lb[i].name + '\t\t\t\t\t' +lb[i].score
@@ -289,6 +341,8 @@ main = ->
       tween.onComplete.add ->
         leaderboardButton.input.enabled = true
         fn = ->
+          playerName = playerNameInput.value
+          sendScore()
           leaderboardButton.input.enabled = false
           if gameOverPanel.alive
             tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
@@ -385,7 +439,20 @@ main = ->
     return
 
   create = ->
+    game.add.plugin(Fabrique.Plugins.InputField);
 
+    # password = game.add.inputField(10, 90, {
+    #   font: '18px Arial',
+    #   fill: '#212121',
+    #   fontWeight: 'bold',
+    #   width: 150,
+    #   padding: 8,
+    #   borderWidth: 1,
+    #   borderColor: '#000',
+    #   borderRadius: 6,
+    #   placeHolder: 'Password',
+    #   type: Fabrique.InputType.password
+    # });
     # enabling physics. don't know if necessary or not?
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -514,6 +581,7 @@ main = ->
       btnTxt.smoothed = false
       btnTxt.anchor.setTo 0.5, 0.5
       spr.addChild btnTxt
+      spr.kill()
       lbPanel.addChild spr
     # for i in [1..lb.length]
     #   txt = game.add.text -150, 30 * (lb.length/2 - i) + 30, "",
@@ -568,7 +636,7 @@ main = ->
     )
     gameOverScoreTxt2.anchor.setTo 0, 0
     gameOverPanel.addChild gameOverScoreTxt2
-    leaderboardButton = game.add.button -100, 20, 'leaderboard', showLeaderBoard, this, 0, 0, 1
+    leaderboardButton = game.add.button -100, 0, 'leaderboard', showLeaderBoard, this, 0, 0, 1
 
     leaderboardButton.events.onInputUp.add ->
       clickSnd.play()
@@ -581,6 +649,24 @@ main = ->
     leaderboardButton.anchor.setTo 0.5, 0.5
     leaderboardButton.smoothed = false
     gameOverPanel.addChild leaderboardButton
+
+    # add text input for name! can't add as a child, so will do jugaad...
+    # nameInput = game.add.inputField -100, 50
+    playerNameInput = game.add.inputField -100, 50,
+      font: '16px "Press Start 2P"'
+      cursorColor: "#00f"
+      height: 20
+      type: Fabrique.InputType.text
+      # placeHolder: 'What'
+      # font: '16px "Arial"'
+      # fillAlpha: 0.5
+      # height: 20
+    
+    # playerNameInput.anchor.setTo 0.5, 0.5
+    gameOverPanel.addChild playerNameInput
+
+
+    playerNameInput.bringToTop()
     # hallTitleText = game.add.bitmapText(0, 0, 'flappyfont', "Choose your Hall bruh", 16, 'center');
     # hallTitleText = game.add.bitmapText(0, -50, 'flappyfont', "Hello World", 24);
     # hallTitleText.anchor.set 0.5
@@ -598,7 +684,15 @@ main = ->
     swooshSnd = game.add.audio("swoosh")
     hoverSnd = game.add.audio("hover")
     clickSnd = game.add.audio("click")
+    # add txt field?
 
+    
+    # pass = game.add.inputField game.world.width/2, game.world.height/2,
+    #   font: '16px "Press Start 2P"'
+    #   fillAlpha: 0
+    #   height: 20
+    # # bg.addChild pass
+    # pass.bringToTop()
     # bird is kill
     bird.kill()
     buttonList = []
@@ -707,7 +801,7 @@ main = ->
   postHall = (idx)->
     console.log('chose hall' + idx)
     hallChosen = true
-    chosenHall = idx
+    chosenHall = idx-1
     for button in buttonList
       button.setOverSound(null)
       button.setUpSound(null)
@@ -877,6 +971,8 @@ main = ->
     render: render
 
   game = new Phaser.Game(WIDTH, HEIGHT, Phaser.CANVAS, parent, state, false, false)
+  # generate secret key
+  secretKey = randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
   # Phaser.Canvas.setSmoothingEnabled(game.context, false);
   return
 

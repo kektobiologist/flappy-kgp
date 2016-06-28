@@ -20,7 +20,12 @@
     "gulp-connect": "~0.3.1",
     "gulp-uglify": "~0.2.1",
     "gulp-concat": "~2.1.7",
-    "phaser-input": "*"
+    "gulp-nodemon": "*",
+    "phaser-input": "*",
+    "express": "*",
+    "mongodb": "*",
+    "mongojs": "*",
+    "body-parser": "*"
   },
   "scripts": {
     "start": "./node_modules/.bin/gulp prod --require coffee-script/register",
