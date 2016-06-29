@@ -70,6 +70,7 @@ main = ->
   gameOverPanel = null
   nameScreenPanel = null
   lbPanel = null
+  leaderSpr = null
   nameScreenGroup = null
 
   secretKey = null
@@ -219,6 +220,29 @@ main = ->
           sanitizeLB()
           popLB()
 
+  showCurrentLeader = ->
+    # show that shit in gameOverPanel
+    leaderSpr.kill()
+    $.ajax 
+      type: 'GET',
+      url: '/getLeader'
+      success: (resp) -> 
+        # good idea to sanitize the lb variable here.
+        # lb = JSON.stringify(eval("(" + resp + ")"));
+        if resp.length == 0
+          return
+        leaderSpr.revive()
+        leaderSpr.frameName = resp[0].hall + '/2'
+        # leaderSpr.animations.destroy()
+        if leaderSpr.animations.getAnimation('fly')
+          leaderSpr.animations.getAnimation('fly').destroy()
+        leaderSpr.animations.add('fly', Phaser.Animation.generateFrameNames(resp[0].hall + '/', 1, 3, '', 1), 10, true);
+        leaderSpr.animations.play('fly')
+        leaderSpr.children[0].setText resp[0].hall
+        # console.log('got lb = ' + lb)
+      ,
+      error: ->
+          
   showLbSolo = (cb) ->
     txtRank = ''
     txtName = ''
@@ -381,6 +405,7 @@ main = ->
     spaceKey.onDown.removeAll()
     bg.events.onInputDown.removeAll()
     gameOverPanel.revive()
+    showCurrentLeader()
     leaderboardButton.input.enabled = false
     # game.world.bringToTop(gameOverGroup)
     # gameOverGroup.bringToTop(gameOverPanel)
@@ -751,7 +776,7 @@ main = ->
     tryAgainText.anchor.setTo 0.5, 0.5
     gameOverPanel.addChild tryAgainText
 
-    gameOverScoreFixedTxt = gameOverScoreFixedTxt = game.add.text(gameOverPanel.width/4-10, -30, "Score\n\nBest",
+    gameOverScoreFixedTxt = game.add.text(gameOverPanel.width/4-10, -30, "Score\n\nBest",
       font: "24px \"04b_19regular\""
       fill: "#fff"
       stroke: "#430"
@@ -760,6 +785,16 @@ main = ->
     )
     gameOverScoreFixedTxt.anchor.setTo 0, 0
     gameOverPanel.addChild gameOverScoreFixedTxt
+
+    curLeaderHint = game.add.text(-gameOverPanel.width/3-20, 60, "Current\nLeader:",
+      font: "8px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "left"
+    )
+    curLeaderHint.anchor.setTo 0, 0
+    gameOverPanel.addChild curLeaderHint
 
     gameOverScoreTxt1 = game.add.text(gameOverPanel.width/4-10, 0, "",
       font: "16px \"04b_19regular\""
@@ -780,6 +815,25 @@ main = ->
     )
     gameOverScoreTxt2.anchor.setTo 0, 0
     gameOverPanel.addChild gameOverScoreTxt2
+
+    leaderSpr = game.add.sprite 100, 10, 'sheet',   'NH' + '/2'
+    leaderSpr.scale.setTo 2, 2
+    leaderSpr.smoothed = false
+    leaderSpr.anchor.setTo 0.5, 0.5
+    curLeaderHint.addChild leaderSpr
+
+    curLeaderSprTxt = game.add.text(0, 10, '',
+        font: "16px \"04b_19regular\""
+        fill: "#fff"
+        stroke: "#430"
+        strokeThickness: 4
+        align: "center"
+    )
+    curLeaderSprTxt.scale.setTo 0.5, 0.5
+    curLeaderSprTxt.smoothed = false
+    curLeaderSprTxt.anchor.setTo 0.5, 0.5
+    leaderSpr.addChild curLeaderSprTxt
+
     leaderboardButton = game.add.button -100, 0, 'leaderboard', showLeaderBoard, this, 2, 0, 1, 0
 
     leaderboardButton.events.onInputUp.add ->
@@ -1107,6 +1161,8 @@ main = ->
       bird.y = (game.world.height / 2) + 8 * Math.cos(game.time.now / 200)
       bird.angle = 0
 
+    if gameOver
+      leaderSpr.y = 10 + 5 * Math.cos(game.time.now / 200)
     if !hallChosen
       for button in buttonList
         if button.doBounce

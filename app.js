@@ -31,6 +31,17 @@ app.get('/getLeaderboardSolo', function (req, res) {
   })  
 });
 
+app.get('/getLeader', function (req, res) {
+  flappyHall.find().sort({'score': -1}).limit(1, function(err, docs) {
+    if (err) {
+      console.log(err)
+      res.send([])
+    }
+    else
+      res.send(docs)
+  })
+});
+
 app.get('/getLeaderboardHall', function (req, res) {
   // lets just do a query everytime, doesn't really hurt
   flappyHall.find().sort({'score': -1}).limit(6, function(err, docs) {
