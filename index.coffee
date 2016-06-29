@@ -786,6 +786,16 @@ main = ->
     gameOverScoreFixedTxt.anchor.setTo 0, 0
     gameOverPanel.addChild gameOverScoreFixedTxt
 
+    lbHint = game.add.text(-gameOverPanel.width/3-60, 0, "Leader-\nboard -->",
+      font: "6px \"Press Start 2P\""
+      fill: "#fff"
+      stroke: "#430"
+      strokeThickness: 4
+      align: "left"
+    )
+    lbHint.anchor.setTo 0, 0.5
+    gameOverPanel.addChild lbHint
+
     curLeaderHint = game.add.text(-gameOverPanel.width/3-20, 60, "Current\nLeader:",
       font: "8px \"Press Start 2P\""
       fill: "#fff"
@@ -834,7 +844,7 @@ main = ->
     curLeaderSprTxt.anchor.setTo 0.5, 0.5
     leaderSpr.addChild curLeaderSprTxt
 
-    leaderboardButton = game.add.button -100, 0, 'leaderboard', showLeaderBoard, this, 2, 0, 1, 0
+    leaderboardButton = game.add.button -100+10, 0, 'leaderboard', showLeaderBoard, this, 2, 0, 1, 0
 
     leaderboardButton.events.onInputUp.add ->
       clickSnd.play()
