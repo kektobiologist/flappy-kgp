@@ -698,13 +698,13 @@ main = ->
     )
     gameOverScoreTxt2.anchor.setTo 0, 0
     gameOverPanel.addChild gameOverScoreTxt2
-    leaderboardButton = game.add.button -100, 0, 'leaderboard', showLeaderBoard, this, 0, 0, 1
+    leaderboardButton = game.add.button -100, 0, 'leaderboard', showLeaderBoard, this, 2, 0, 1, 0
 
     leaderboardButton.events.onInputUp.add ->
       clickSnd.play()
     #   # console.log('sigh')
-    # leaderboardButton.events.onInputOver.add ->
-    #   hoverSnd.play()
+    leaderboardButton.events.onInputOver.add ->
+      hoverSnd.play()
     # leaderboardButton.setUpSound(hoverSnd)
     # leaderboardButton.setOverSound(clickSnd)
     leaderboardButton.scale.setTo 2, 2
