@@ -4,6 +4,7 @@ var mongojs = require('mongojs');
 var db = mongojs('mongodb://flappy:flappy@ds023674.mlab.com:23674/heroku_j1s0h387');
 var flappy = db.collection('flappy')
 var flappyHall = db.collection('flappyHall')
+var allGames = db.collection('allGames')
 
 app.use(express.static(__dirname));
 
@@ -107,6 +108,12 @@ app.post('/sendScore', function (req, res) {
       {'$inc': {'score': score}},
       {'upsert': true}
     )
+    // also just add each and every game in a separate collection
+    allGames.insert({
+      'name': req.body.name,
+      'hall': req.body.hall,
+      'score': score
+    });
   })
   res.send('OK');
 });
