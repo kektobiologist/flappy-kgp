@@ -5,6 +5,8 @@ var db = mongojs('mongodb://flappy:flappy@ds023674.mlab.com:23674/heroku_j1s0h38
 var flappy = db.collection('flappy')
 var flappyHall = db.collection('flappyHall')
 var allGames = db.collection('allGames')
+var gameTS = db.collection('gameTS')
+var knownHackers = db.collection('knownHackers')
 
 app.use(express.static(__dirname));
 
@@ -67,6 +69,17 @@ String.prototype.hashCode = function() {
   return hash;
 };
 
+app.post('/initGame', function(req, res) {
+  key = req.body.key
+  gameTS.update(
+  {'key': key},
+  {'$set': {
+    'date': new Date()
+  }},
+  {'upsert': true}
+  )
+})
+
 app.post('/sendScore', function (req, res) {
   // we will get all scores
   key = req.body.key
@@ -80,41 +93,56 @@ app.post('/sendScore', function (req, res) {
     res.send('OK');
     return;
   }
-  // console.log("good token.");
-  flappy.findOne({'key': key}, function (err, result) {
+  // check if we have a gameTS, if not then all good :/
+  gameTS.findOne({'key': key}, function(err, result) {
+    // console.log("good token.");
     if (result != null) {
-      hiscore = result['score']
+      score = parseInt(req.body.score);
+      diff = new Date() - result.date
+      expected = score * 1000
+      console.log('expected ' + expected + ', got ' + diff)
+      if (diff < expected) {
+        console.log('someone is hacking!')
+        knownHackers.insert({'key': key, 'name': req.body.name})
+        res.send('OK');
+        return;
+      }
     }
-    console.log('got the result. maybe add?')
-    score = parseInt(req.body.score)
+    flappy.findOne({'key': key}, function (err, result) {
+      if (result != null) {
+        hiscore = result['score']
+      }
+      console.log('got the result. maybe add?')
+      score = parseInt(req.body.score)
 
-    if (score > hiscore) {
-      name = req.body.name
-      if (!name)
-        name = "<noname>"
-      flappy.update(
-        {'key': key},
-        {'$set': {
-          'name': name,
-          'hall': req.body.hall,
-          'score': score
-        }},
+      if (score > hiscore) {
+        name = req.body.name
+        if (!name)
+          name = "<noname>"
+        flappy.update(
+          {'key': key},
+          {'$set': {
+            'name': name,
+            'hall': req.body.hall,
+            'score': score
+          }},
+          {'upsert': true}
+        )
+      }
+      // add to flappyHall collection also
+      flappyHall.update(
+        {'hall': req.body.hall},
+        {'$inc': {'score': score}},
         {'upsert': true}
       )
-    }
-    // add to flappyHall collection also
-    flappyHall.update(
-      {'hall': req.body.hall},
-      {'$inc': {'score': score}},
-      {'upsert': true}
-    )
-    // also just add each and every game in a separate collection
-    allGames.insert({
-      'name': req.body.name,
-      'hall': req.body.hall,
-      'score': score,
-      'key': key
-    });
+      // also just add each and every game in a separate collection
+      allGames.insert({
+        'name': req.body.name,
+        'hall': req.body.hall,
+        'score': score,
+        'key': key
+      });
+    })
+    res.send('OK');
   })
-  res.send('OK');
 });

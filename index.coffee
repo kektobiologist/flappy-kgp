@@ -9,7 +9,6 @@ main = ->
   SPAWN_RATE = 1 / 1200
   OPENING = 100
   SCALE = 1
-
   MAXLB = 6
   HEIGHT = 384
   # WIDTH = 288
@@ -570,6 +569,7 @@ main = ->
     hash;
 
   create = ->
+
     game.add.plugin(Fabrique.Plugins.InputField);
     # get name here. if already set, don't ask again!!
     maybeName = window.localStorage.getItem("name")
@@ -1117,6 +1117,18 @@ main = ->
     return
 
   start = ->
+    data = 
+      key: secretKey
+    $.ajax
+      type: 'POST',
+      data: data,
+      dataType: 'text'
+      url: '/initGame'
+      success: (resp)-> 
+        # console.log(resp);
+      ,
+      error: ->
+        # console.log('error sending score!')     
     # # console.log("start called")
     # START!
     gameStarted = true
