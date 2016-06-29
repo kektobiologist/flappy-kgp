@@ -1,104 +1,106 @@
-DEBUG = false
-SPEED = 160
-GRAVITY = 1100
-FLAP = 320
-SPAWN_RATE = 1 / 1200
-OPENING = 100
-SCALE = 1
 
-MAXLB = 6
-HEIGHT = 384
-# WIDTH = 288
-WIDTH = 500
-# HEIGHT = 576
-# WIDTH = 1024*2
-# GAME_HEIGHT = 336
-GROUND_HEIGHT = 64
-GROUND_Y = HEIGHT - GROUND_HEIGHT
-
-parent = document.querySelector("#screen")
-gameStarted = undefined
-gameOver = undefined
-
-deadTubeTops = []
-deadTubeBottoms = []
-deadInvs = []
-
-# dummy leaderboard
-lb = [
-
-    name: 'Arpit'
-    score: '58'
-    hall: 'AZ'
-  ,
-    name: 'Apoorv'
-    score: '2'
-    hall: 'NH'
-  ,
-  #   name: 'Soumyadeep'
-  #   score: '10'
-  #   hall: 'RP'
-  # , 
-  #   name: 'Vivek'
-  #   score: '5'
-  #   hall: 'RP'
-  # , 
-    name: 'Vikrant'
-    score: '1'
-    hall: 'RP'
-  , 
-    name: 'Arkanath'
-    score: '100'
-    hall: 'MS'
-]
-
-hallList = ['AZ', 'MT', 'RP', 'SN', 'NH', 'PT', 'RK', 'LLR', 'MS', 'LBS', 'MMM', 'HJB']
-chosenHall = null
-isNameSet = false
-hallChosen = false
-bg = null
-# credits = null
-tubes = null
-invs = null
-bird = null
-ground = null
-hall = null
-gameOverPanel = null
-nameScreenPanel = null
-lbPanel = null
-nameScreenGroup = null
-
-secretKey = null
-playerName = null
-score = null
-scoreText = null
-instText = null
-gameOverText = null
-tryAgainText = null
-gameOverScoreTxt1 = null
-gameOverScoreTxt2 = null
-
-playerNameInput = null
-
-flapSnd = null
-scoreSnd = null
-hurtSnd = null
-fallSnd = null
-swooshSnd = null
-hoverSnd = null
-clickSnd = null
-
-tubesTimer = null
-spaceKey = null
-numHalls = 12
-buttonList = null
-leaderboardButton = null
-githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=hyspace&repo=flappy&type=watch&count=true&size=large"
-  allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
-
-floor = Math.floor
 
 main = ->
+  SUPERSECRET = 'flappy'
+  DEBUG = false
+  SPEED = 160
+  GRAVITY = 1100
+  FLAP = 320
+  SPAWN_RATE = 1 / 1200
+  OPENING = 100
+  SCALE = 1
+
+  MAXLB = 6
+  HEIGHT = 384
+  # WIDTH = 288
+  WIDTH = 500
+  # HEIGHT = 576
+  # WIDTH = 1024*2
+  # GAME_HEIGHT = 336
+  GROUND_HEIGHT = 64
+  GROUND_Y = HEIGHT - GROUND_HEIGHT
+
+  parent = document.querySelector("#screen")
+  gameStarted = undefined
+  gameOver = undefined
+
+  deadTubeTops = []
+  deadTubeBottoms = []
+  deadInvs = []
+
+  # dummy leaderboard
+  lb = [
+
+      name: 'Arpit'
+      score: '58'
+      hall: 'AZ'
+    ,
+      name: 'Apoorv'
+      score: '2'
+      hall: 'NH'
+    ,
+    #   name: 'Soumyadeep'
+    #   score: '10'
+    #   hall: 'RP'
+    # , 
+    #   name: 'Vivek'
+    #   score: '5'
+    #   hall: 'RP'
+    # , 
+      name: 'Vikrant'
+      score: '1'
+      hall: 'RP'
+    , 
+      name: 'Arkanath'
+      score: '100'
+      hall: 'MS'
+  ]
+
+  hallList = ['AZ', 'MT', 'RP', 'SN', 'NH', 'PT', 'RK', 'LLR', 'MS', 'LBS', 'MMM', 'HJB']
+  chosenHall = null
+  isNameSet = false
+  hallChosen = false
+  bg = null
+  # credits = null
+  tubes = null
+  invs = null
+  bird = null
+  ground = null
+  hall = null
+  gameOverPanel = null
+  nameScreenPanel = null
+  lbPanel = null
+  nameScreenGroup = null
+
+  secretKey = null
+  playerName = null
+  score = null
+  scoreText = null
+  instText = null
+  gameOverText = null
+  tryAgainText = null
+  gameOverScoreTxt1 = null
+  gameOverScoreTxt2 = null
+
+  playerNameInput = null
+
+  flapSnd = null
+  scoreSnd = null
+  hurtSnd = null
+  fallSnd = null
+  swooshSnd = null
+  hoverSnd = null
+  clickSnd = null
+
+  tubesTimer = null
+  spaceKey = null
+  numHalls = 12
+  buttonList = null
+  leaderboardButton = null
+  githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=hyspace&repo=flappy&type=watch&count=true&size=large"
+    allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
+
+  floor = Math.floor
   randomString = (length, chars) ->
     result = '';
     for i in [length..1]
@@ -186,6 +188,7 @@ main = ->
       name: playerName,
       hall: hallList[chosenHall],
       key: secretKey
+      token: hashFn(score + secretKey + SUPERSECRET + score)
 
     $.ajax
       type: 'POST',
@@ -428,8 +431,8 @@ main = ->
       # physics:
         # birdphysics: ['assets/birds/bird.json']
 
-      bitmapFont:
-        flappyfont: ['assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.fnt']
+      # bitmapFont:
+      #   flappyfont: ['assets/fonts/flappyfont/flappyfont.png', 'assets/fonts/flappyfont/flappyfont.fnt']
 
       spritesheet:
         # bird: [
@@ -471,6 +474,17 @@ main = ->
 
     return
 
+  hashFn = (str) ->
+    hash = 0
+    if (str.length == 0) 
+      return hash;
+    len = str.length
+    for i in [0..len-1] 
+      chr   = str.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; 
+    hash;
+
   create = ->
     game.add.plugin(Fabrique.Plugins.InputField);
 
@@ -504,6 +518,8 @@ main = ->
 
     # Draw bg
     bg = game.add.tileSprite(0, 0, WIDTH, HEIGHT, 'bg')
+    # bg.scale.setTo 5/2.0, 5/2.0
+    bg.smoothed = true
     # enable input. now put all global mouse events on bg.
     bg.inputEnabled = true;
     bg.input.priorityID = 0; # lower priority
@@ -873,11 +889,11 @@ main = ->
       button.setUpSound(null)
     # Add bird
     bird = game.add.sprite(0, 0, "sheet", hallList[idx-1] + '/2')
+    bird.scale.setTo 2, 2
+    bird.anchor.setTo 0.5, 0.5
     game.physics.arcade.enableBody(bird)
     hall.bringToTop()
     # need to scale up for small models..
-    bird.scale.setTo 2, 2
-    bird.anchor.setTo 0.5, 0.5
     bird.animations.add('fly', Phaser.Animation.generateFrameNames(hallList[idx-1] + '/', 1, 3, '', 1), 10, true);
     # bird.animations.add "fly", [
     #   0
@@ -1045,13 +1061,13 @@ main = ->
 
   render = ->
     if DEBUG
-      game.debug.renderSpriteBody bird
+      game.debug.body bird
       tubes.forEachAlive (tube) ->
-        game.debug.renderSpriteBody tube
+        game.debug.body tube
         return
 
       invs.forEach (inv) ->
-        game.debug.renderSpriteBody inv
+        game.debug.body inv
         return
 
     return
