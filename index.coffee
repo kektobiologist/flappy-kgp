@@ -97,7 +97,7 @@ main = ->
   numHalls = 12
   buttonList = null
   leaderboardButton = null
-  githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=hyspace&repo=flappy&type=watch&count=true&size=large"
+  githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=korroktheslavemaster&repo=flappy-kgp&type=watch&count=true&size=large"
     allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
 
   floor = Math.floor
@@ -196,10 +196,10 @@ main = ->
       dataType: 'text'
       url: '/sendScore'
       success: (resp)-> 
-        console.log(resp);
+        # console.log(resp);
       ,
       error: ->
-        console.log('error sending score!')      
+        # console.log('error sending score!')      
 
   showLeaderBoard = ->
     # playerName = playerNameInput.value
@@ -260,7 +260,7 @@ main = ->
               # good idea to sanitize the lb variable here.
               # lb = JSON.stringify(eval("(" + resp + ")"));
               lb = resp
-              console.log('got lb = ' + lb)
+              # console.log('got lb = ' + lb)
               sanitizeLB()
               popLB()
             ,
@@ -270,7 +270,7 @@ main = ->
               popLB()
         
 
-          # console.log 'setting text'
+          # # console.log 'setting text'
           # lbPanel.children[i].setText (i+1) + '\t\t\t\t' + lb[i].name + '\t\t\t\t\t' +lb[i].score
         # click/space to remove leaderBoard and go back to reset state:
         tween.onComplete.add ->
@@ -296,7 +296,7 @@ main = ->
     sprite.scale.setTo 2, 2
     sprite.smoothed = false
     sprite.anchor.setTo 0.5, 0.5
-    # console.log('added btton at' + x + y)
+    # # console.log('added btton at' + x + y)
     # sprTxt = game.add.text(0, 20, hallList[idx],
     #   font: "16px \"04b_19regular\""
     #   fill: "#fff"
@@ -339,7 +339,7 @@ main = ->
         leaderboardButton.input.enabled = false
         if gameOverPanel.alive
           tween = game.add.tween(gameOverPanel).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
-          # console.log('setGameOver click cb called')
+          # # console.log('setGameOver click cb called')
           swooshSnd.play()
           # remove events heere as well, jsut to remove weird sounds. doesn't affect gameplay
           spaceKey.onDown.removeAll()
@@ -355,7 +355,7 @@ main = ->
       spaceKey.onDown.addOnce fn
       # startTextInput()
       # playerNameInput.addEnterCallback ->
-        # console.log('enter pressed!')
+        # # console.log('enter pressed!')
 
     swooshSnd.play()
 
@@ -503,7 +503,7 @@ main = ->
     # enabling physics. don't know if necessary or not?
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    console.log("%chttps://github.com/hyspace/flappy", "color: black; font-size: x-large");
+    # console.log("%chttps://github.com/korroktheslavemaster/flappy-kgp", "color: black; font-size: x-large");
     ratio = window.innerWidth / window.innerHeight
     document.querySelector('#github').innerHTML = githubHtml if ratio > 1.15 or ratio < 0.7
     document.querySelector('#loading').style.display = 'none'
@@ -698,7 +698,7 @@ main = ->
 
     leaderboardButton.events.onInputUp.add ->
       clickSnd.play()
-    #   console.log('sigh')
+    #   # console.log('sigh')
     # leaderboardButton.events.onInputOver.add ->
     #   hoverSnd.play()
     # leaderboardButton.setUpSound(hoverSnd)
@@ -783,7 +783,7 @@ main = ->
 
   chooseHall = ->
     # something
-    console.log("choosing hall...")
+    # console.log("choosing hall...")
     # add hall screen
     swooshSnd.play()
     hall = game.add.sprite(game.world.width/2, game.world.height * 1.5, "hall")
@@ -819,7 +819,7 @@ main = ->
 
     # hall.addChild buttonGroup
     # button = game.add.button 0, 0, 'bird', ->
-    #   console.log('hey')
+    #   # console.log('hey')
     # , this, 2, 1, 0
     # hall.addChild button
     # button.bringToTop
@@ -844,7 +844,7 @@ main = ->
     hallList[idx-1] + '/2'
     button.smoothed = false
     button.anchor.setTo 0.5, 0.5
-    # console.log('added btton at' + x + y)
+    # # console.log('added btton at' + x + y)
     button.animations.add "onHover", [
       hallList[idx-1] + '/1'
       hallList[idx-1] + '/2'
@@ -881,7 +881,7 @@ main = ->
 
   # call this after hall is chosen, to set up game/keys 
   postHall = (idx)->
-    console.log('chose hall' + idx)
+    # console.log('chose hall' + idx)
     hallChosen = true
     chosenHall = idx-1
     for button in buttonList
@@ -939,7 +939,7 @@ main = ->
     spaceKey.onDown.add flap
     bg.events.onInputDown.add flap
     bg.events.onInputDown.add ->
-      console.log("down pressed?")
+      # console.log("down pressed?")
     # RESET!
     reset()
 
@@ -966,7 +966,7 @@ main = ->
     return
 
   start = ->
-    # console.log("start called")
+    # # console.log("start called")
     # START!
     gameStarted = true
     # remove timer here for good measure. luckily doesn't break even if already removed
@@ -1055,7 +1055,7 @@ main = ->
       
       # startTextInput()
       # playerNameInput.addEnterCallback ->
-        # console.log('enter pressed!')
+        # # console.log('enter pressed!')
 
     swooshSnd.play()
 
