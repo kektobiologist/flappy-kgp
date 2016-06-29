@@ -112,7 +112,8 @@ app.post('/sendScore', function (req, res) {
     allGames.insert({
       'name': req.body.name,
       'hall': req.body.hall,
-      'score': score
+      'score': score,
+      'key': key
     });
   })
   res.send('OK');
