@@ -97,8 +97,8 @@ main = ->
   numHalls = 12
   buttonList = null
   leaderboardButton = null
-  githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=korroktheslavemaster&repo=flappy-kgp&type=watch&count=true&size=large"
-    allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
+  # githubHtml = """<iframe src="http://ghbtns.com/github-btn.html?user=korroktheslavemaster&repo=flappy-kgp&type=watch&count=true&size=large"
+  #   allowtransparency="true" frameborder="0" scrolling="0" width="150" height="30"></iframe>"""
 
   floor = Math.floor
   randomString = (length, chars) ->
@@ -566,9 +566,9 @@ main = ->
     # enabling physics. don't know if necessary or not?
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    # console.log("%chttps://github.com/korroktheslavemaster/flappy-kgp", "color: black; font-size: x-large");
+    console.log("%chttps://github.com/korroktheslavemaster/flappy-kgp", "color: black; font-size: x-large");
     ratio = window.innerWidth / window.innerHeight
-    document.querySelector('#github').innerHTML = githubHtml if ratio > 1.15 or ratio < 0.7
+    # document.querySelector('#github').innerHTML = githubHtml if ratio > 1.15 or ratio < 0.7
     document.querySelector('#loading').style.display = 'none'
 
     # Set world dimensions
@@ -794,6 +794,7 @@ main = ->
     leaderboardButton.smoothed = false
     gameOverPanel.addChild leaderboardButton
 
+    # leading
     nsTop = game.add.text(0, -30, "Enter Name",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
