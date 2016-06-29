@@ -703,7 +703,6 @@ main = ->
     btn1 = game.add.button 0-lbPanel.width/2, 0-lbPanel.height/2, undefined, ->
       lbPanel.frame = 0
       showLbHall(undefined)
-      console.log('clicked')
     , this
     btn1.events.onInputUp.add ->
       clickSnd.play()
@@ -712,7 +711,6 @@ main = ->
     btn2 = game.add.button 104-lbPanel.width/2, 0-lbPanel.height/2, undefined, ->
       lbPanel.frame = 1
       showLbSolo(undefined)
-      console.log('also clicked')
     , this
     btn2.events.onInputUp.add ->
       clickSnd.play()
