@@ -487,7 +487,11 @@ main = ->
 
   create = ->
     game.add.plugin(Fabrique.Plugins.InputField);
-
+    # get name here. if already set, don't ask again!!
+    maybeName = window.localStorage.getItem("name")
+    if maybeName
+      isNameSet = true
+      playerName = maybeName
     # password = game.add.inputField(10, 90, {
     #   font: '18px Arial',
     #   fill: '#212121',
@@ -1046,6 +1050,8 @@ main = ->
         stopTextInput()
         isNameSet = true
         playerName = playerNameInput.value
+        window.localStorage.setItem "name", playerName
+
         tween = game.add.tween(nameScreenGroup).to(y:game.world.height * 1.5, 800, Phaser.Easing.Back.In, true);
         swooshSnd.play()
         tween.onComplete.add ->
