@@ -22,7 +22,7 @@ gulp.task 'concat', ['coffee'], ->
   .pipe gulp.dest '.'
 
 gulp.task 'watch', ->
-  gulp.watch ['index.coffee', '!gulpfile.coffee'], ['coffee']
+  gulp.watch ['index.coffee', '!gulpfile.coffee'], ['coffee', 'concat']
 
 # gulp.task "connect", connect.server(
 #   root: __dirname

@@ -3,6 +3,8 @@ var app = express();
 var mongojs = require('mongojs');
 var db = mongojs('mongodb://flappy:flappy@ds023674.mlab.com:23674/heroku_j1s0h387');
 var flappy = db.collection('flappy')
+var flappyHall = db.collection('flappyHall')
+
 app.use(express.static(__dirname));
 
 var port = process.env.PORT || 3000;
@@ -17,7 +19,7 @@ app.listen(port, function () {
 
 var lb = []
 
-app.get('/getLeaderboard', function (req, res) {
+app.get('/getLeaderboardSolo', function (req, res) {
   // lets just do a query everytime, doesn't really hurt
   flappy.find().sort({'score': -1}).limit(6, function(err, docs) {
     if (err) {
@@ -27,6 +29,19 @@ app.get('/getLeaderboard', function (req, res) {
     else
       res.send(docs);
   })  
+});
+
+app.get('/getLeaderboardHall', function (req, res) {
+  // lets just do a query everytime, doesn't really hurt
+  flappyHall.find().sort({'score': -1}).limit(6, function(err, docs) {
+    if (err) {
+      console.log(err)
+      res.send([])
+    }
+    else
+      res.send(docs);
+  });
+
 });
 
 String.prototype.hashCode = function() {
@@ -60,6 +75,7 @@ app.post('/sendScore', function (req, res) {
     }
     console.log('got the result. maybe add?')
     score = parseInt(req.body.score)
+
     if (score > hiscore) {
       name = req.body.name
       if (!name)
@@ -74,7 +90,12 @@ app.post('/sendScore', function (req, res) {
         {'upsert': true}
       )
     }
+    // add to flappyHall collection also
+    flappyHall.update(
+      {'hall': req.body.hall},
+      {'$inc': {'score': score}},
+      {'upsert': true}
+    )
   })
-  
   res.send('OK');
 });

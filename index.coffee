@@ -169,6 +169,109 @@ main = ->
     scoreSnd.play()
     return
 
+  showLbHall = (cb) ->
+    txtRank = ''
+    txtName = ''
+    txtScore = ''
+    # display "Loading" while youre loading the leaderbaord
+    lbPanel.children[1].setText "Loading.."
+    lbPanel.children[2].setText ""
+    lbPanel.children[0].setText ""
+    for x in [3..lbPanel.children.length-1]
+      lbPanel.children[x].kill()
+    # revive the shitty tab buttons fam
+    lbPanel.children[9].revive()
+    lbPanel.children[10].revive()
+    popLB = ->
+      for i in [0..lb.length-1]
+        # check if dummy
+        if lb[i].score < 0
+          txtRank += '\n-'
+          txtName += '\n---'
+          txtScore += '\n---'
+          lbPanel.children[3+i].kill()
+        else
+          txtRank += '\n' + (i+1)
+          txtName += '\n' + lb[i].hall
+          txtScore += '\n' + lb[i].score
+          hallSprite = lbPanel.children[3+i]
+          hallSprite.revive()
+          hallSprite.frameName = lb[i].hall + '/2'
+          hallSprite.children[0].setText lb[i].hall
+      lbPanel.children[0].setText txtRank
+      lbPanel.children[1].setText txtName
+      lbPanel.children[2].setText txtScore
+      lbPanel.children[9].bringToTop()
+    $.when(cb).done (res) ->
+      $.ajax 
+        type: 'GET',
+        url: '/getLeaderboardHall'
+        success: (resp) -> 
+          # good idea to sanitize the lb variable here.
+          # lb = JSON.stringify(eval("(" + resp + ")"));
+          lb = resp
+          # console.log('got lb = ' + lb)
+          sanitizeLB()
+          popLB()
+        ,
+        error: ->
+          lb = []    
+          sanitizeLB()
+          popLB()
+
+  showLbSolo = (cb) ->
+    txtRank = ''
+    txtName = ''
+    txtScore = ''
+    # display "Loading" while youre loading the leaderbaord
+    lbPanel.children[1].setText "Loading.."
+    lbPanel.children[2].setText ""
+    lbPanel.children[0].setText ""
+    for x in [3..lbPanel.children.length-1]
+      lbPanel.children[x].kill()
+    # revive the shitty tab buttons fam
+    lbPanel.children[9].revive()
+    lbPanel.children[10].revive()
+    popLB = ->
+      for i in [0..lb.length-1]
+        # check if dummy
+        if lb[i].score < 0
+          txtRank += '\n-'
+          txtName += '\n---'
+          txtScore += '\n---'
+          lbPanel.children[3+i].kill()
+        else
+          txtRank += '\n' + (i+1)
+          txtName += '\n' + lb[i].name
+          txtScore += '\n' + lb[i].score
+          hallSprite = lbPanel.children[3+i]
+          hallSprite.revive()
+          hallSprite.frameName = lb[i].hall + '/2'
+          hallSprite.children[0].setText lb[i].hall
+      lbPanel.children[0].setText txtRank
+      lbPanel.children[1].setText txtName
+      lbPanel.children[2].setText txtScore
+      lbPanel.children[9].bringToTop()
+    # shoudl wait till sendScoreReq is done, before asking for leaderboard.
+    $.when(cb).done (res) ->
+      $.ajax 
+        type: 'GET',
+        url: '/getLeaderboardSolo'
+        success: (resp) -> 
+          # good idea to sanitize the lb variable here.
+          # lb = JSON.stringify(eval("(" + resp + ")"));
+          lb = resp
+          # console.log('got lb = ' + lb)
+          sanitizeLB()
+          popLB()
+        ,
+        error: ->
+          lb = []    
+          sanitizeLB()
+          popLB()
+
+
+
   sanitizeLB = ->
     lb.sort( (a, b) ->
       return parseInt(a.score) < parseInt(b.score)
@@ -202,7 +305,7 @@ main = ->
         # console.log('error sending score!')      
 
   showLeaderBoard = ->
-    # playerName = playerNameInput.value
+    lbPanel.frame = 0
     sendScoreReq = sendScore()
     # move the game over panel first
     leaderboardButton.input.enabled = false
@@ -219,56 +322,8 @@ main = ->
         # bring up the leaderboard
         tween = game.add.tween(lbPanel).to(y:game.world.height / 2, 800, Phaser.Easing.Back.Out,true);
         # display all the shit
-        txtRank = ''
-        txtName = ''
-        txtScore = ''
-        # display "Loading" while youre loading the leaderbaord
-        lbPanel.children[1].setText "Loading.."
-        lbPanel.children[2].setText ""
-        lbPanel.children[0].setText ""
-        for x in [3..lbPanel.children.length-1]
-          lbPanel.children[x].kill()
-        popLB = ->
-          for i in [0..lb.length-1]
-            # check if dummy
-            if lb[i].score < 0
-              txtRank += '\n-'
-              txtName += '\n---'
-              txtScore += '\n---'
-              lbPanel.children[3+i].kill()
-            else
-              txtRank += '\n' + (i+1)
-              txtName += '\n' + lb[i].name
-              txtScore += '\n' + lb[i].score
-              hallSprite = lbPanel.children[3+i]
-              hallSprite.revive()
-              hallSprite.frameName = lb[i].hall + '/2'
-            # hallSprite.animations.stop()
-            # hallSprite.animations.destroy()
-            # hallSprite.animations.add('fly', Phaser.Animation.generateFrameNames(hallList[lb[i].hall] + '/', 1, 3, '', 1), 10, true);
-            # hallSprite.animations.play('fly')
-              hallSprite.children[0].setText lb[i].hall
-          lbPanel.children[0].setText txtRank
-          lbPanel.children[1].setText txtName
-          lbPanel.children[2].setText txtScore
-        # shoudl wait till sendScoreReq is done, before asking for leaderboard.
-        $.when(sendScoreReq).done (res) ->
-          $.ajax 
-            type: 'GET',
-            url: '/getLeaderboard'
-            success: (resp) -> 
-              # good idea to sanitize the lb variable here.
-              # lb = JSON.stringify(eval("(" + resp + ")"));
-              lb = resp
-              # console.log('got lb = ' + lb)
-              sanitizeLB()
-              popLB()
-            ,
-            error: ->
-              lb = []    
-              sanitizeLB()
-              popLB()
         
+        showLbHall(sendScoreReq)
 
           # # console.log 'setting text'
           # lbPanel.children[i].setText (i+1) + '\t\t\t\t' + lb[i].name + '\t\t\t\t\t' +lb[i].score
@@ -445,6 +500,11 @@ main = ->
           52
           29
         ]
+        lbPanel: [
+          "assets/lbPanel.png"
+          448
+          320
+        ]
 
       image:
         tubeTop: ["assets/tube1.png"]
@@ -453,7 +513,6 @@ main = ->
         bg: ["assets/bg2.png"]
         hall: ["assets/hall.png"]
         gameover: ["assets/gameover-panel.png"]
-        lbPanel: ["assets/lbPanel.png"]
         nameScreen: ["assets/name.png"]
 
       audio:
@@ -588,26 +647,28 @@ main = ->
     gameOverText.scale.setTo SCALE, SCALE
   
     # leaderboard panel
-    lbPanel = game.add.sprite game.world.width / 2, game.world.height * 1.5, "lbPanel"
+    lbPanel = game.add.sprite game.world.width / 2, game.world.height * 1.5, "lbPanel", 0
     lbPanel.anchor.setTo 0.5, 0.5
     lbPanel.kill()
 
+
+
     # add text fields to lbpanel. one field per column.
-    txtRank = game.add.text -170, -10, "",
+    txtRank = game.add.text -170, -10+10, "",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
       stroke: "#430"
       strokeThickness: 4
       align: "center"
     txtRank.anchor.setTo 0.5, 0.5
-    txtName = game.add.text 20, -10, "",
+    txtName = game.add.text 20, -10+10, "",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
       stroke: "#430"
       strokeThickness: 4
       align: "left"
     txtName.anchor.setTo 0.5, 0.5
-    txtScore = game.add.text 150, -10, "",
+    txtScore = game.add.text 150, -10+10, "",
       font: "16px \"Press Start 2P\""
       fill: "#fff"
       stroke: "#430"
@@ -623,7 +684,7 @@ main = ->
     # add sprites for each position on lb
 
     for i in [0..MAXLB-1]
-      spr = addHallSprite -120, -105 + i*41, 0
+      spr = addHallSprite -120, -105 + i*41+10, 0
       btnTxt = game.add.text(0, 10, '',
         font: "16px \"04b_19regular\""
         fill: "#fff"
@@ -637,6 +698,30 @@ main = ->
       spr.addChild btnTxt
       spr.kill()
       lbPanel.addChild spr
+
+    # add tab sfsd
+    btn1 = game.add.button 0-lbPanel.width/2, 0-lbPanel.height/2, undefined, ->
+      lbPanel.frame = 0
+      showLbHall(undefined)
+      console.log('clicked')
+    , this
+    btn1.events.onInputUp.add ->
+      clickSnd.play()
+    btn1.width = 100
+    btn1.height = 33
+    btn2 = game.add.button 104-lbPanel.width/2, 0-lbPanel.height/2, undefined, ->
+      lbPanel.frame = 1
+      showLbSolo(undefined)
+      console.log('also clicked')
+    , this
+    btn2.events.onInputUp.add ->
+      clickSnd.play()
+    btn2.width = 100
+    btn2.height = 33
+    btn1.bringToTop()
+    btn2.bringToTop()
+    lbPanel.addChild btn1
+    lbPanel.addChild btn2
     # for i in [1..lb.length]
     #   txt = game.add.text -150, 30 * (lb.length/2 - i) + 30, "",
     #     font: "16px \"Press Start 2P\""
@@ -657,7 +742,6 @@ main = ->
     gameOverPanel = game.add.sprite(game.world.width/2, game.world.height * 1.5, "gameover")
     gameOverPanel.anchor.setTo 0.5, 0.5
     gameOverPanel.kill()
-
 
     tryAgainText = game.add.text(0, gameOverPanel.height / 2 - 20, "Touch to Try Again",
       font: "8px \"Press Start 2P\""
