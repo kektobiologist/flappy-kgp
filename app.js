@@ -141,7 +141,8 @@ app.post('/sendScore', function (req, res) {
         'name': req.body.name,
         'hall': req.body.hall,
         'score': score,
-        'key': key
+        'key': key,
+        'browserKey': req.body.browserKey
       });
     })
     res.send('OK');

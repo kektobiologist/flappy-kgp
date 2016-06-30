@@ -18,6 +18,7 @@ main = ->
   # GAME_HEIGHT = 336
   GROUND_HEIGHT = 64
   GROUND_Y = HEIGHT - GROUND_HEIGHT
+  
 
   parent = document.querySelector("#screen")
   gameStarted = undefined
@@ -107,6 +108,12 @@ main = ->
       result += chars[Math.floor(Math.random() * chars.length)];
     return result;
   
+  browserKey = window.localStorage.getItem('browserKey')
+  if !browserKey
+    browserKey = randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    window.localStorage.setItem('browserKey', browserKey)
+
+
   spawntube = (openPos, flipped) ->
     tube = null
 
@@ -315,6 +322,7 @@ main = ->
       hall: hallList[chosenHall],
       key: secretKey
       token: hashFn(score + secretKey + SUPERSECRET + score)
+      browserKey: browserKey
 
     $.ajax
       type: 'POST',
