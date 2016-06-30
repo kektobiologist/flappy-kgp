@@ -121,6 +121,9 @@ app.post('/sendScore', function (req, res) {
         res.send('OK');
         return;
       }
+    } else {
+      res.send('OK')
+      return;
     }
     flappy.findOne({'key': key}, function (err, result) {
       if (result != null) {
