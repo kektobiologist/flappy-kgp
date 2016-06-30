@@ -104,7 +104,7 @@ app.post('/sendScore', function (req, res) {
       console.log('expected ' + expected + ', got ' + diff)
       if (diff < expected) {
         console.log('someone is hacking!')
-        knownHackers.insert({'key': key, 'name': req.body.name})
+        knownHackers.insert({'key': key, 'name': req.body.name, 'attemptedScore': score})
         res.send('OK');
         return;
       }
