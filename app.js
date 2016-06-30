@@ -78,6 +78,7 @@ app.post('/initGame', function(req, res) {
   }},
   {'upsert': true}
   )
+  res.send('OK');
 })
 
 app.post('/sendScore', function (req, res) {
