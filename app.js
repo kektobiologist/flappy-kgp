@@ -58,6 +58,19 @@ app.get('/getLeaderboardHall', function (req, res) {
 
 });
 
+app.get('/getPersonalScores/:browserKey', function (req, res) {
+  // lets just do a query everytime, doesn't really hurt
+  allGames.find({'browserKey': req.params.browserKey}).sort({'score': -1}).limit(6, function(err, docs) {
+    if (err) {
+      console.log(err)
+      res.send([])
+    }
+    else
+      res.send(docs);
+  });
+
+});
+
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
   if (this.length === 0) return hash;
@@ -100,7 +113,7 @@ app.post('/sendScore', function (req, res) {
     if (result != null) {
       score = parseInt(req.body.score);
       diff = new Date() - result.date
-      expected = score * 1000
+      expected = score * 1200
       console.log('expected ' + expected + ', got ' + diff)
       if (diff < expected) {
         console.log('someone is hacking!')
