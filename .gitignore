@@ -4,4 +4,10 @@ tmp/
 assets-backup/
 assets.zip
 tmp-assets/
-app.js
+bmi.html
+dump.txt
+dump/
+input.patch
+simplechart.html
+viz.py
+viz.pyc

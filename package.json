@@ -25,11 +25,12 @@
     "express": "*",
     "mongodb": "*",
     "mongojs": "*",
-    "body-parser": "*"
+    "body-parser": "*",
+    "d3": "~4.0.0"
   },
   "scripts": {
     "start": "./node_modules/.bin/gulp prod --require coffee-script/register",
-    "postinstall": "bower install"
+    "postinstall": "patch input.patch && bower install"
   },
   "repository": {
     "type": "git",

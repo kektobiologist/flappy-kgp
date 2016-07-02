@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var mongojs = require('mongojs');
-var db = mongojs('mongodb://korrok:pavilion@ds023674.mlab.com:23674/heroku_j1s0h387');
+var db = mongojs(process.env.MONGODB_URI || 'test');
 var flappy = db.collection('flappy')
 var flappyHall = db.collection('flappyHall')
 var allGames = db.collection('allGames')
