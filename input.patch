@@ -1,0 +1,39 @@
+--- /home/arpit/Downloads/phaser-input-master/build/phaser-input.js	2016-05-14 14:52:24.000000000 +0530
++++ node_modules/phaser-input/build/phaser-input.js	2016-06-28 20:06:28.330030425 +0530
+@@ -154,6 +154,7 @@
+             this.focus = false;
+             this.value = '';
+             this.windowScale = 1;
++            this.enterPressed = new Phaser.Signal();
+             /**
+              * Update function makes the cursor blink, it uses two private properties to make it toggle
+              *
+@@ -272,6 +273,7 @@
+             }
+         };
+         InputField.prototype.update = function () {
++            // console.log("updating!")
+             if (!this.focus) {
+                 return;
+             }
+@@ -308,6 +310,12 @@
+             }
+         };
+         /**
++         * add callback for enter key
++         */
++        InputField.prototype.addEnterCallback = function(cb) {
++            this.enterPressed.add(cb);
++        };
++        /**
+          *
+          */
+         InputField.prototype.startFocus = function () {
+@@ -497,6 +505,7 @@
+             this.value = this.domElement.value;
+             if (evt.keyCode === 13) {
+                 this.endFocus();
++                this.enterPressed.dispatch()
+                 return;
+             }
+             this.updateText();
