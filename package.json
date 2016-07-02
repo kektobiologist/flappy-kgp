@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/gulp prod --require coffee-script/register",
-    "postinstall": "patch input.patch && bower install"
+    "postinstall": "patch node_modules/phaser-input/build/phaser-input.js input.patch && bower install"
   },
   "repository": {
     "type": "git",
